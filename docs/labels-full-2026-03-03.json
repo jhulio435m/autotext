@@ -1,0 +1,829 @@
+{
+  "count": 103,
+  "labels": [
+    {
+      "id": "207165d4-1853-4843-8ba1-81951355f474",
+      "name": "00 DOC. DE PRESENTACION",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.418Z",
+      "updated_at": "2026-03-03T05:48:57.418Z",
+      "deleted_at": null
+    },
+    {
+      "id": "6534e2f2-8435-42ee-afcd-9945b301d22f",
+      "name": "00 DOC. DE PRESENTACION",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.106Z",
+      "updated_at": "2026-03-03T05:48:57.106Z",
+      "deleted_at": null
+    },
+    {
+      "id": "86764787-69c5-4753-a8f3-8d3ab407f2ae",
+      "name": "00 DOC. DE PRESENTACION",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.236Z",
+      "updated_at": "2026-03-03T12:58:49.788Z",
+      "deleted_at": null
+    },
+    {
+      "id": "ba29b7e7-c089-48aa-b33c-5bc96632c281",
+      "name": "00 DOC. DE PRESENTACION",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:56.986Z",
+      "updated_at": "2026-03-03T20:49:17.298Z",
+      "deleted_at": "2026-03-03T20:49:17.298Z"
+    },
+    {
+      "id": "e883335f-15cc-40cb-a11f-86ecc058f60b",
+      "name": "00 DOC. DE PRESENTACION",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:56.866Z",
+      "updated_at": "2026-03-03T20:48:48.757Z",
+      "deleted_at": "2026-03-03T20:48:48.757Z"
+    },
+    {
+      "id": "06cce6dc-326e-4042-aa76-8c18bd764817",
+      "name": "01 RESUMEN EJECUTIVO",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.241Z",
+      "updated_at": "2026-03-03T12:58:47.344Z",
+      "deleted_at": null
+    },
+    {
+      "id": "1b7fafeb-e348-4d66-9f59-f1674cd40fb9",
+      "name": "01 RESUMEN EJECUTIVO",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.109Z",
+      "updated_at": "2026-03-03T05:48:57.109Z",
+      "deleted_at": null
+    },
+    {
+      "id": "6f6cbc1c-49c7-4bc3-bac9-d8379be697d4",
+      "name": "01 RESUMEN EJECUTIVO",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:56.871Z",
+      "updated_at": "2026-03-03T20:48:48.747Z",
+      "deleted_at": "2026-03-03T20:48:48.747Z"
+    },
+    {
+      "id": "a1038d03-fdae-4bbf-8ad5-7d5c05d361ae",
+      "name": "01 RESUMEN EJECUTIVO",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.426Z",
+      "updated_at": "2026-03-03T05:48:57.426Z",
+      "deleted_at": null
+    },
+    {
+      "id": "aa5c4660-c1bf-4139-837d-9c82397d94b8",
+      "name": "01 RESUMEN EJECUTIVO",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:56.990Z",
+      "updated_at": "2026-03-03T20:49:17.289Z",
+      "deleted_at": "2026-03-03T20:49:17.289Z"
+    },
+    {
+      "id": "00640382-efb7-4063-bd35-9fe53f933926",
+      "name": "03 MEMORIA DESCRIPTIVA",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.246Z",
+      "updated_at": "2026-03-03T12:58:46.308Z",
+      "deleted_at": null
+    },
+    {
+      "id": "579f1fbd-3eaf-4672-9d2a-dcc1fb15ea6e",
+      "name": "03 MEMORIA DESCRIPTIVA",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.113Z",
+      "updated_at": "2026-03-03T05:48:57.113Z",
+      "deleted_at": null
+    },
+    {
+      "id": "6a1fc565-07e8-4e7f-b3e1-fdbc522a766e",
+      "name": "03 MEMORIA DESCRIPTIVA",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:56.994Z",
+      "updated_at": "2026-03-03T20:49:17.276Z",
+      "deleted_at": "2026-03-03T20:49:17.276Z"
+    },
+    {
+      "id": "baf2fdb4-4022-4589-9a8c-cacfe2884f7e",
+      "name": "03 MEMORIA DESCRIPTIVA",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.434Z",
+      "updated_at": "2026-03-03T05:48:57.434Z",
+      "deleted_at": null
+    },
+    {
+      "id": "e2d59f46-662f-4a71-91bf-b8a602a356ba",
+      "name": "03 MEMORIA DESCRIPTIVA",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:56.875Z",
+      "updated_at": "2026-03-03T20:48:48.735Z",
+      "deleted_at": "2026-03-03T20:48:48.735Z"
+    },
+    {
+      "id": "58862598-c772-4c95-81b2-56141858fdbf",
+      "name": "04 ESPECIFICACIONES TECNICAS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:56.879Z",
+      "updated_at": "2026-03-03T20:48:48.725Z",
+      "deleted_at": "2026-03-03T20:48:48.725Z"
+    },
+    {
+      "id": "5b1935ee-25da-4938-9667-b0c7ab60aea7",
+      "name": "04 ESPECIFICACIONES TECNICAS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:56.997Z",
+      "updated_at": "2026-03-03T20:49:17.265Z",
+      "deleted_at": "2026-03-03T20:49:17.265Z"
+    },
+    {
+      "id": "668ab5e2-4ae9-436c-ba27-827886db993f",
+      "name": "04 ESPECIFICACIONES TECNICAS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.116Z",
+      "updated_at": "2026-03-03T05:48:57.116Z",
+      "deleted_at": null
+    },
+    {
+      "id": "877093d7-b409-4781-adf5-e8dc0c59fbae",
+      "name": "04 ESPECIFICACIONES TECNICAS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.441Z",
+      "updated_at": "2026-03-03T05:48:57.441Z",
+      "deleted_at": null
+    },
+    {
+      "id": "e396b6c4-f7cd-4644-8a27-e1db73857f83",
+      "name": "04 ESPECIFICACIONES TECNICAS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.250Z",
+      "updated_at": "2026-03-03T12:58:45.151Z",
+      "deleted_at": null
+    },
+    {
+      "id": "20d210a9-849b-440b-ae54-f2d7dc16f3ce",
+      "name": "05 METRADOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.256Z",
+      "updated_at": "2026-03-03T12:58:43.639Z",
+      "deleted_at": null
+    },
+    {
+      "id": "3045eb8a-c254-4b53-95e7-66772fbd5c23",
+      "name": "05 METRADOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:56.883Z",
+      "updated_at": "2026-03-03T20:48:48.714Z",
+      "deleted_at": "2026-03-03T20:48:48.714Z"
+    },
+    {
+      "id": "4323ed94-c45f-4655-b39f-53dea6d336df",
+      "name": "05 METRADOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.120Z",
+      "updated_at": "2026-03-03T05:48:57.120Z",
+      "deleted_at": null
+    },
+    {
+      "id": "605c09f1-a7d1-4e77-92e9-77671ddd4089",
+      "name": "05 METRADOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.001Z",
+      "updated_at": "2026-03-03T20:49:17.256Z",
+      "deleted_at": "2026-03-03T20:49:17.256Z"
+    },
+    {
+      "id": "f8d4b985-7ba9-475a-a6df-0bfa696268e1",
+      "name": "05 METRADOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.450Z",
+      "updated_at": "2026-03-03T05:48:57.450Z",
+      "deleted_at": null
+    },
+    {
+      "id": "12205d46-0990-4d67-8c09-c9276d5a6e1b",
+      "name": "06 COSTOS Y PRESUPUESTOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.124Z",
+      "updated_at": "2026-03-03T05:48:57.124Z",
+      "deleted_at": null
+    },
+    {
+      "id": "57b74af0-4fce-49f0-aaf5-b357df729445",
+      "name": "06 COSTOS Y PRESUPUESTOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.005Z",
+      "updated_at": "2026-03-03T20:49:17.246Z",
+      "deleted_at": "2026-03-03T20:49:17.246Z"
+    },
+    {
+      "id": "b463ce2f-5c7b-4e7d-9f91-9264503fe103",
+      "name": "06 COSTOS Y PRESUPUESTOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:56.887Z",
+      "updated_at": "2026-03-03T20:48:48.705Z",
+      "deleted_at": "2026-03-03T20:48:48.705Z"
+    },
+    {
+      "id": "ebc00708-392f-44bc-b15f-d81ea7dbd7ce",
+      "name": "06 COSTOS Y PRESUPUESTOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.261Z",
+      "updated_at": "2026-03-03T12:58:39.401Z",
+      "deleted_at": null
+    },
+    {
+      "id": "fb42ff3d-e0c7-48ed-b0ae-c8279452de48",
+      "name": "06 COSTOS Y PRESUPUESTOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.457Z",
+      "updated_at": "2026-03-03T05:48:57.457Z",
+      "deleted_at": null
+    },
+    {
+      "id": "23638cda-cf71-484e-bd09-0685bb744227",
+      "name": "07 CRONOGRMAS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.031Z",
+      "updated_at": "2026-03-03T20:49:17.176Z",
+      "deleted_at": "2026-03-03T20:49:17.176Z"
+    },
+    {
+      "id": "29f299d0-b70b-4fe4-ab59-e5238dbf86c3",
+      "name": "07 CRONOGRMAS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.502Z",
+      "updated_at": "2026-03-03T12:53:35.805Z",
+      "deleted_at": null
+    },
+    {
+      "id": "2d1544eb-c3f0-4245-bae4-9e5203d8a4bc",
+      "name": "07 CRONOGRMAS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.150Z",
+      "updated_at": "2026-03-03T12:54:37.558Z",
+      "deleted_at": null
+    },
+    {
+      "id": "4fe154b8-111f-4070-8d72-989e2d588e56",
+      "name": "07 CRONOGRMAS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.295Z",
+      "updated_at": "2026-03-03T12:58:37.718Z",
+      "deleted_at": null
+    },
+    {
+      "id": "9df5f524-8b8a-4883-8496-83c5bb3230ec",
+      "name": "07 CRONOGRMAS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:56.914Z",
+      "updated_at": "2026-03-03T20:48:48.628Z",
+      "deleted_at": "2026-03-03T20:48:48.628Z"
+    },
+    {
+      "id": "6db0a384-cbd0-4638-a8b6-765c4b53523f",
+      "name": "08 ESTUDIOS BASICOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:56.891Z",
+      "updated_at": "2026-03-03T20:48:48.696Z",
+      "deleted_at": "2026-03-03T20:48:48.696Z"
+    },
+    {
+      "id": "8057d57d-eaf7-4d20-8981-d0c41f997c04",
+      "name": "08 ESTUDIOS BASICOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.265Z",
+      "updated_at": "2026-03-03T12:58:36.339Z",
+      "deleted_at": null
+    },
+    {
+      "id": "9b16f731-16f4-4436-ae85-8bccbe8dc38c",
+      "name": "08 ESTUDIOS BASICOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.128Z",
+      "updated_at": "2026-03-03T05:48:57.128Z",
+      "deleted_at": null
+    },
+    {
+      "id": "cbe70133-67a4-4a4f-8ffb-cd8c82ed5286",
+      "name": "08 ESTUDIOS BASICOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.008Z",
+      "updated_at": "2026-03-03T20:49:17.237Z",
+      "deleted_at": "2026-03-03T20:49:17.237Z"
+    },
+    {
+      "id": "e71ccdda-1d7a-4d4a-8a0b-abec088517b6",
+      "name": "08 ESTUDIOS BASICOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.465Z",
+      "updated_at": "2026-03-03T05:48:57.465Z",
+      "deleted_at": null
+    },
+    {
+      "id": "0e830379-ef5f-4d1a-9d2f-84e7375fe0b0",
+      "name": "09 MEMORIAS DE CALCULO",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.020Z",
+      "updated_at": "2026-03-03T20:49:17.208Z",
+      "deleted_at": "2026-03-03T20:49:17.208Z"
+    },
+    {
+      "id": "1626d2f8-bde5-436a-8640-6ace5cbfc69a",
+      "name": "09 MEMORIAS DE CALCULO",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:56.902Z",
+      "updated_at": "2026-03-03T20:48:48.668Z",
+      "deleted_at": "2026-03-03T20:48:48.668Z"
+    },
+    {
+      "id": "429d53f0-bf28-4ecf-b25a-ba60fe02c0c1",
+      "name": "09 MEMORIAS DE CALCULO",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.280Z",
+      "updated_at": "2026-03-03T12:58:34.938Z",
+      "deleted_at": null
+    },
+    {
+      "id": "a60dd828-f880-4a42-853d-99b3cc9bf90a",
+      "name": "09 MEMORIAS DE CALCULO",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.139Z",
+      "updated_at": "2026-03-03T05:48:57.139Z",
+      "deleted_at": null
+    },
+    {
+      "id": "b5b8c2b1-63a8-4488-926f-526bbd0a52ca",
+      "name": "09 MEMORIAS DE CALCULO",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.487Z",
+      "updated_at": "2026-03-03T05:48:57.487Z",
+      "deleted_at": null
+    },
+    {
+      "id": "a64d19e1-29f4-4a81-aac7-66f13de309a4",
+      "name": "10 PLANOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.143Z",
+      "updated_at": "2026-03-03T05:48:57.143Z",
+      "deleted_at": null
+    },
+    {
+      "id": "acf08462-5b70-44ce-94b5-aeb1b6b78d80",
+      "name": "10 PLANOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.285Z",
+      "updated_at": "2026-03-03T12:58:33.573Z",
+      "deleted_at": null
+    },
+    {
+      "id": "b85b7c40-e594-4fee-93bc-12d05dafcb9c",
+      "name": "10 PLANOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:56.906Z",
+      "updated_at": "2026-03-03T20:48:48.652Z",
+      "deleted_at": "2026-03-03T20:48:48.652Z"
+    },
+    {
+      "id": "e12cda94-da2e-4ea5-a2d8-253ee0e75056",
+      "name": "10 PLANOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.492Z",
+      "updated_at": "2026-03-03T05:48:57.492Z",
+      "deleted_at": null
+    },
+    {
+      "id": "fae02535-d260-4774-bfd6-92521145fc21",
+      "name": "10 PLANOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.024Z",
+      "updated_at": "2026-03-03T20:49:17.198Z",
+      "deleted_at": "2026-03-03T20:49:17.198Z"
+    },
+    {
+      "id": "176855d4-5c8c-4c01-babb-4f41b7e8fc7a",
+      "name": "11 ANEXOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.146Z",
+      "updated_at": "2026-03-03T05:48:57.146Z",
+      "deleted_at": null
+    },
+    {
+      "id": "1ba063e4-554a-46a3-906e-dd4f037f5798",
+      "name": "11 ANEXOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:56.910Z",
+      "updated_at": "2026-03-03T20:48:48.642Z",
+      "deleted_at": "2026-03-03T20:48:48.642Z"
+    },
+    {
+      "id": "4c91fde1-8dd1-4e59-b4f0-a32cb81a7ab5",
+      "name": "11 ANEXOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.497Z",
+      "updated_at": "2026-03-03T05:48:57.497Z",
+      "deleted_at": null
+    },
+    {
+      "id": "6be8a5d9-c463-4328-9030-0c7f9e3f15fd",
+      "name": "11 ANEXOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.027Z",
+      "updated_at": "2026-03-03T20:49:17.188Z",
+      "deleted_at": "2026-03-03T20:49:17.188Z"
+    },
+    {
+      "id": "ff0da4d8-5fc4-4605-8b68-71ec71057b35",
+      "name": "11 ANEXOS",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T05:48:57.290Z",
+      "updated_at": "2026-03-03T12:58:31.179Z",
+      "deleted_at": null
+    },
+    {
+      "id": "1149b691-db0f-4a3d-8834-ce45d9e8b2e5",
+      "name": "admin_OLD_1149b691",
+      "color": "#0693e3",
+      "created_at": "2026-02-22T04:22:32.335Z",
+      "updated_at": "2026-02-23T15:09:52.047Z",
+      "deleted_at": "2026-02-23T15:09:52.047Z"
+    },
+    {
+      "id": "a102805e-905d-4ee1-920a-717e9a19e183",
+      "name": "AMBIENTAL",
+      "color": "#00D084",
+      "created_at": "2026-02-25T05:29:37.840Z",
+      "updated_at": "2026-03-03T20:51:38.735Z",
+      "deleted_at": "2026-03-03T20:51:38.733Z"
+    },
+    {
+      "id": "9d9cea19-d889-48eb-8817-fd140b87da09",
+      "name": "Aprobado Entidad",
+      "color": "#00D084",
+      "created_at": "2026-02-28T16:07:14.677Z",
+      "updated_at": "2026-03-03T20:48:48.766Z",
+      "deleted_at": "2026-03-03T20:48:48.766Z"
+    },
+    {
+      "id": "d64473a6-1864-4b80-96c9-8504a6e39a21",
+      "name": "Aprobado Interno",
+      "color": "#FF6900",
+      "created_at": "2026-02-28T16:07:05.036Z",
+      "updated_at": "2026-03-03T20:48:48.775Z",
+      "deleted_at": "2026-03-03T20:48:48.775Z"
+    },
+    {
+      "id": "1bcdf377-2369-4a49-851e-84b7e7098712",
+      "name": "ARQUITECTURA",
+      "color": "#eb144c",
+      "created_at": "2026-02-23T15:17:51.303Z",
+      "updated_at": "2026-03-03T20:51:24.952Z",
+      "deleted_at": "2026-03-03T20:51:24.950Z"
+    },
+    {
+      "id": "56debdc2-a639-4f4d-aa21-71942ccb752d",
+      "name": "Automatizable",
+      "color": "#fcb900",
+      "created_at": "2026-03-03T20:53:12.200Z",
+      "updated_at": "2026-03-03T20:53:12.200Z",
+      "deleted_at": null
+    },
+    {
+      "id": "693e811e-7da6-411c-86cb-19408863d5ca",
+      "name": "Automatizable",
+      "color": "#00d084",
+      "created_at": "2026-03-03T20:50:40.917Z",
+      "updated_at": "2026-03-03T20:51:02.874Z",
+      "deleted_at": null
+    },
+    {
+      "id": "7bb8fc60-4b6d-4e3b-8c04-85ae122283fd",
+      "name": "Automatizable",
+      "color": "#fcb900",
+      "created_at": "2026-03-03T20:52:00.878Z",
+      "updated_at": "2026-03-03T20:52:00.878Z",
+      "deleted_at": null
+    },
+    {
+      "id": "efd01025-0571-45cd-980a-f0a4d3fe7a70",
+      "name": "Automatizable",
+      "color": "#fcb900",
+      "created_at": "2026-03-03T20:52:20.131Z",
+      "updated_at": "2026-03-03T20:52:20.131Z",
+      "deleted_at": null
+    },
+    {
+      "id": "d04e4322-358f-42bc-8349-08196c2f2042",
+      "name": "concepts_OLD_d04e4322",
+      "color": "#9900ef",
+      "created_at": "2026-02-22T04:22:32.345Z",
+      "updated_at": "2026-02-23T15:09:52.034Z",
+      "deleted_at": "2026-02-23T15:09:52.034Z"
+    },
+    {
+      "id": "2b2de327-9f56-4e9f-a04d-2fc13eaa5804",
+      "name": "dsfsdf_OLD_2b2de327",
+      "color": "#0693E3",
+      "created_at": "2026-02-27T04:55:58.627Z",
+      "updated_at": "2026-02-27T13:13:14.084Z",
+      "deleted_at": "2026-02-27T13:13:14.084Z"
+    },
+    {
+      "id": "b88c7f64-42b1-4a70-94e1-4c48e46b3364",
+      "name": "ECONOMISTA",
+      "color": "#9900EF",
+      "created_at": "2026-02-25T05:29:56.481Z",
+      "updated_at": "2026-03-03T20:51:41.524Z",
+      "deleted_at": "2026-03-03T20:51:41.523Z"
+    },
+    {
+      "id": "0237cb92-5b8b-46bc-957f-980f3141abb2",
+      "name": "EMPTY_REF_0237cb92",
+      "color": "#8ed1fc",
+      "created_at": "2026-02-26T16:15:47.972Z",
+      "updated_at": "2026-03-03T02:03:59.022Z",
+      "deleted_at": "2026-03-03T05:48:56.736Z"
+    },
+    {
+      "id": "0b9c8dfd-9ec6-4586-8211-b88a23e2525d",
+      "name": "EMPTY_REF_0b9c8dfd",
+      "color": "#8ed1fc",
+      "created_at": "2026-02-26T16:16:28.533Z",
+      "updated_at": "2026-03-03T02:04:14.487Z",
+      "deleted_at": "2026-03-03T05:48:56.736Z"
+    },
+    {
+      "id": "122815c9-9154-4bcf-8bd2-bb030c1c8b4f",
+      "name": "EMPTY_REF_122815c9",
+      "color": "#8ed1fc",
+      "created_at": "2026-02-26T16:16:49.215Z",
+      "updated_at": "2026-03-03T02:04:28.760Z",
+      "deleted_at": "2026-03-03T05:48:56.736Z"
+    },
+    {
+      "id": "2e7154b5-9348-4c0c-a9d9-dff6f3b94602",
+      "name": "EMPTY_REF_2e7154b5",
+      "color": "#8ed1fc",
+      "created_at": "2026-02-26T16:17:31.861Z",
+      "updated_at": "2026-03-03T02:14:09.549Z",
+      "deleted_at": "2026-03-03T05:48:56.736Z"
+    },
+    {
+      "id": "7f7010f7-0b3e-4f59-9f07-386387c544cd",
+      "name": "EMPTY_REF_7f7010f7",
+      "color": "#eb144c",
+      "created_at": "2026-02-28T15:28:40.511Z",
+      "updated_at": "2026-03-03T02:18:30.194Z",
+      "deleted_at": "2026-03-03T05:48:56.736Z"
+    },
+    {
+      "id": "85790081-40a9-438c-a354-49be3987f557",
+      "name": "EMPTY_REF_85790081",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T01:42:24.631Z",
+      "updated_at": "2026-03-03T02:14:20.340Z",
+      "deleted_at": "2026-03-03T05:48:56.736Z"
+    },
+    {
+      "id": "9cff487e-e69e-4db7-a713-16cadd1ad7fa",
+      "name": "EMPTY_REF_9cff487e",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T01:42:48.800Z",
+      "updated_at": "2026-03-03T02:14:30.617Z",
+      "deleted_at": "2026-03-03T05:48:56.736Z"
+    },
+    {
+      "id": "9f3d371f-7f41-4ada-832d-47ecb9eaf1b0",
+      "name": "EMPTY_REF_9f3d371f",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T01:42:58.878Z",
+      "updated_at": "2026-03-03T02:14:37.376Z",
+      "deleted_at": "2026-03-03T05:48:56.736Z"
+    },
+    {
+      "id": "ac931557-a219-4c84-b865-7f8234f0bf50",
+      "name": "EMPTY_REF_ac931557",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T02:13:59.048Z",
+      "updated_at": "2026-03-03T02:18:17.466Z",
+      "deleted_at": "2026-03-03T05:48:56.736Z"
+    },
+    {
+      "id": "b58e4a2c-383b-4f81-ae56-c2208dc11889",
+      "name": "EMPTY_REF_b58e4a2c",
+      "color": "#8ed1fc",
+      "created_at": "2026-02-26T16:16:41.196Z",
+      "updated_at": "2026-03-03T02:04:21.544Z",
+      "deleted_at": "2026-03-03T05:48:56.736Z"
+    },
+    {
+      "id": "ce395996-8ba9-4b46-82d8-406acf73202e",
+      "name": "EMPTY_REF_ce395996",
+      "color": "#8ed1fc",
+      "created_at": "2026-02-26T16:16:13.731Z",
+      "updated_at": "2026-03-03T02:04:07.220Z",
+      "deleted_at": "2026-03-03T05:48:56.736Z"
+    },
+    {
+      "id": "e0fa1949-a611-4f7d-a210-e46b972c996a",
+      "name": "EMPTY_REF_e0fa1949",
+      "color": "#eb144c",
+      "created_at": "2026-03-02T23:29:10.740Z",
+      "updated_at": "2026-03-03T02:18:33.134Z",
+      "deleted_at": "2026-03-03T05:48:56.736Z"
+    },
+    {
+      "id": "ff46bfbc-8645-4dfc-a987-af213f53395c",
+      "name": "EMPTY_REF_ff46bfbc",
+      "color": "#8ed1fc",
+      "created_at": "2026-02-26T16:17:26.348Z",
+      "updated_at": "2026-03-03T02:04:36.145Z",
+      "deleted_at": "2026-03-03T05:48:56.736Z"
+    },
+    {
+      "id": "2f92a65a-954f-4016-bc8f-c3522ab4ba16",
+      "name": "ESP. COSTOS ,PRESUPEUSTOS Y METRADOS",
+      "color": "#FCB900",
+      "created_at": "2026-02-25T05:30:33.730Z",
+      "updated_at": "2026-03-03T20:51:45.864Z",
+      "deleted_at": "2026-03-03T20:51:45.863Z"
+    },
+    {
+      "id": "00b55a08-f928-4e68-b91e-5ff650f7d208",
+      "name": "ESTRUCTURAS",
+      "color": "#FCB900",
+      "created_at": "2026-02-23T15:17:36.359Z",
+      "updated_at": "2026-03-03T20:51:22.322Z",
+      "deleted_at": "2026-03-03T20:51:22.321Z"
+    },
+    {
+      "id": "337d5584-1783-404a-af78-1ef12087a675",
+      "name": "HIDRÁULICO",
+      "color": "#8ED1FC",
+      "created_at": "2026-02-25T05:29:30.677Z",
+      "updated_at": "2026-03-03T20:51:35.669Z",
+      "deleted_at": "2026-03-03T20:51:35.668Z"
+    },
+    {
+      "id": "31b99a56-d1a8-4586-b0bb-e185033ab6dc",
+      "name": "MECÁNICA DE SUELOS",
+      "color": "#ABB8C3",
+      "created_at": "2026-02-25T05:29:22.268Z",
+      "updated_at": "2026-03-03T20:51:32.859Z",
+      "deleted_at": "2026-03-03T20:51:32.858Z"
+    },
+    {
+      "id": "91a60127-87fb-4ae4-b1c9-e35e67aef2c3",
+      "name": "OBSERVACIONES",
+      "color": "#eb144c",
+      "created_at": "2026-03-03T12:54:05.426Z",
+      "updated_at": "2026-03-03T12:54:10.064Z",
+      "deleted_at": null
+    },
+    {
+      "id": "b6367f45-b3c1-4959-8d15-5168e91bc09d",
+      "name": "OBSERVACIONES",
+      "color": "#eb144c",
+      "created_at": "2026-03-03T12:51:30.900Z",
+      "updated_at": "2026-03-03T12:51:47.245Z",
+      "deleted_at": null
+    },
+    {
+      "id": "380d9ee2-d7bd-424b-b84e-bce49aaed478",
+      "name": "OBSERVADO ENTIDAD",
+      "color": "#eb144c",
+      "created_at": "2026-03-03T05:48:57.012Z",
+      "updated_at": "2026-03-03T20:49:17.227Z",
+      "deleted_at": "2026-03-03T20:49:17.227Z"
+    },
+    {
+      "id": "6456f04e-87ac-48aa-b88b-869fc29d6090",
+      "name": "OBSERVADO ENTIDAD",
+      "color": "#eb144c",
+      "created_at": "2026-03-03T05:48:57.132Z",
+      "updated_at": "2026-03-03T12:54:51.855Z",
+      "deleted_at": null
+    },
+    {
+      "id": "6b9df7f5-c71b-4525-855b-dbf14dc37aef",
+      "name": "Observado entidad",
+      "color": "#EB144C",
+      "created_at": "2026-02-28T16:06:57.631Z",
+      "updated_at": "2026-03-03T20:48:48.786Z",
+      "deleted_at": "2026-03-03T20:48:48.786Z"
+    },
+    {
+      "id": "a4293db9-2579-4452-91b2-f41e204d7221",
+      "name": "OBSERVADO ENTIDAD",
+      "color": "#eb144c",
+      "created_at": "2026-03-03T05:48:57.270Z",
+      "updated_at": "2026-03-03T12:51:41.187Z",
+      "deleted_at": null
+    },
+    {
+      "id": "d1d08ac1-8296-44b0-90d5-96a4f7b560bd",
+      "name": "OBSERVADO ENTIDAD",
+      "color": "#eb144c",
+      "created_at": "2026-03-03T05:48:56.895Z",
+      "updated_at": "2026-03-03T20:48:48.688Z",
+      "deleted_at": "2026-03-03T20:48:48.688Z"
+    },
+    {
+      "id": "fe4d5516-db25-47cf-b2c3-70421f74e3ae",
+      "name": "OBSERVADO ENTIDAD",
+      "color": "#eb144c",
+      "created_at": "2026-03-03T05:48:57.473Z",
+      "updated_at": "2026-03-03T20:51:51.026Z",
+      "deleted_at": "2026-03-03T20:51:51.025Z"
+    },
+    {
+      "id": "1c2e904e-9626-462b-9dee-586b9ad300a9",
+      "name": "OBSERVADO EXTERNO",
+      "color": "#eb144c",
+      "created_at": "2026-03-03T12:53:51.717Z",
+      "updated_at": "2026-03-03T12:54:20.824Z",
+      "deleted_at": null
+    },
+    {
+      "id": "0ccddb31-e4b9-48b7-9a90-b6ae459484ef",
+      "name": "OBSERVADO INTERNO",
+      "color": "#eb144c",
+      "created_at": "2026-03-03T05:48:57.135Z",
+      "updated_at": "2026-03-03T12:54:53.781Z",
+      "deleted_at": null
+    },
+    {
+      "id": "4ddcd77f-3699-4abb-ba56-0a64a0c2ea65",
+      "name": "OBSERVADO INTERNO",
+      "color": "#eb144c",
+      "created_at": "2026-03-03T05:48:57.275Z",
+      "updated_at": "2026-03-03T12:51:38.314Z",
+      "deleted_at": null
+    },
+    {
+      "id": "be854e43-c92b-4d3f-a87e-31401d27569d",
+      "name": "Observado interno",
+      "color": "#ABB8C3",
+      "created_at": "2026-02-28T16:06:45.249Z",
+      "updated_at": "2026-03-03T20:48:48.796Z",
+      "deleted_at": "2026-03-03T20:48:48.796Z"
+    },
+    {
+      "id": "c2f2b80a-8785-49e9-8e54-23b960c80e6c",
+      "name": "OBSERVADO INTERNO",
+      "color": "#eb144c",
+      "created_at": "2026-03-03T05:48:57.016Z",
+      "updated_at": "2026-03-03T20:49:17.218Z",
+      "deleted_at": "2026-03-03T20:49:17.217Z"
+    },
+    {
+      "id": "d398ebdf-f815-4ce6-bfe1-9af317fbf605",
+      "name": "OBSERVADO INTERNO",
+      "color": "#eb144c",
+      "created_at": "2026-03-03T05:48:57.481Z",
+      "updated_at": "2026-03-03T12:54:12.198Z",
+      "deleted_at": null
+    },
+    {
+      "id": "d705a1df-a2b2-4b35-8dba-1b0775ac182c",
+      "name": "OBSERVADO INTERNO",
+      "color": "#eb144c",
+      "created_at": "2026-03-03T05:48:56.898Z",
+      "updated_at": "2026-03-03T20:48:48.679Z",
+      "deleted_at": "2026-03-03T20:48:48.679Z"
+    },
+    {
+      "id": "cffd0506-6fcc-4a67-842f-41b7ecf1cae4",
+      "name": "SANITARIO",
+      "color": "#FF6900",
+      "created_at": "2026-02-23T15:17:07.819Z",
+      "updated_at": "2026-03-03T20:51:19.455Z",
+      "deleted_at": "2026-03-03T20:51:19.454Z"
+    },
+    {
+      "id": "3e9fcd47-5452-4cd0-bc51-ac6e58224067",
+      "name": "TOPOGRAFO",
+      "color": "#9900EF",
+      "created_at": "2026-02-25T05:29:12.340Z",
+      "updated_at": "2026-03-03T20:51:27.838Z",
+      "deleted_at": "2026-03-03T20:51:27.837Z"
+    },
+    {
+      "id": "cd68fcc3-a7d8-45e4-a9d8-ded00220960d",
+      "name": "TRD",
+      "color": "#8ed1fc",
+      "created_at": "2026-03-03T12:58:27.132Z",
+      "updated_at": "2026-03-03T12:58:57.283Z",
+      "deleted_at": null
+    },
+    {
+      "id": "229d47a2-7146-4b55-b5cb-5ba3a18902c8",
+      "name": "xddxxd_OLD_229d47a2",
+      "color": "#8ED1FC",
+      "created_at": "2026-02-27T04:35:56.333Z",
+      "updated_at": "2026-02-27T13:13:14.099Z",
+      "deleted_at": "2026-02-27T13:13:14.099Z"
+    }
+  ]
+}
