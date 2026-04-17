@@ -2,19 +2,23 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import bcrypt from 'bcryptjs';
 import { config } from '../config.js';
-import { pool } from '../db.js';
+import { appPool } from '../db.js';
+import { seedSystemTemplates } from '../templates.js';
 
 async function run() {
   const schemaPath = path.join(process.cwd(), 'server', 'db', 'schema.sql');
   const schemaSql = await fs.readFile(schemaPath, 'utf8');
 
-  await pool.query(schemaSql);
+  await appPool.query(schemaSql);
   console.log('Schema aplicado.');
+
+  await seedSystemTemplates(appPool);
+  console.log('Plantillas del sistema listas.');
 
   if (config.seedAdminEmail && config.seedAdminPassword) {
     const passwordHash = await bcrypt.hash(config.seedAdminPassword, 10);
 
-    await pool.query(
+    await appPool.query(
       `INSERT INTO app_users (email, password_hash, name, role, updated_at)
        VALUES ($1, $2, $3, $4, NOW())
        ON CONFLICT (email)
@@ -38,5 +42,5 @@ run()
     process.exitCode = 1;
   })
   .finally(async () => {
-    await pool.end();
+    await appPool.end();
   });

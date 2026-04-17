@@ -1,0 +1,365 @@
+[
+  {
+    "id": "sec_full_001",
+    "isStructure": true,
+    "level": 1,
+    "title": "Identificacion general",
+    "expanded": true,
+    "canvasExpanded": true,
+    "children": [
+      {
+        "id": "var_full_codigo",
+        "isStructure": false,
+        "type": "variable",
+        "label": "Codigo del documento",
+        "required": true,
+        "inputType": "text",
+        "inputPlaceholder": "Ej: 02-FORMATO-6A"
+      },
+      {
+        "id": "var_full_version",
+        "isStructure": false,
+        "type": "variable",
+        "label": "Version",
+        "required": true,
+        "inputType": "text",
+        "inputPlaceholder": "Ej: 1.0"
+      },
+      {
+        "id": "var_full_fecha",
+        "isStructure": false,
+        "type": "variable",
+        "label": "Fecha de emision",
+        "required": true,
+        "inputType": "date"
+      },
+      {
+        "id": "var_full_disciplina",
+        "isStructure": false,
+        "type": "variable",
+        "label": "Disciplina",
+        "required": true,
+        "inputType": "select",
+        "inputOptions": [
+          "Geotecnia",
+          "Hidraulica",
+          "Estructural",
+          "Ambiental",
+          "Topografia"
+        ]
+      },
+      {
+        "id": "var_full_responsable",
+        "isStructure": false,
+        "type": "variable",
+        "label": "Responsable principal",
+        "required": true,
+        "inputType": "text",
+        "inputPlaceholder": "Nombre y cargo"
+      }
+    ]
+  },
+  {
+    "id": "sec_full_002",
+    "isStructure": true,
+    "level": 1,
+    "title": "Contexto del proyecto",
+    "expanded": true,
+    "canvasExpanded": true,
+    "children": [
+      {
+        "id": "sec_full_002_001",
+        "isStructure": true,
+        "level": 2,
+        "title": "Datos base",
+        "expanded": true,
+        "canvasExpanded": true,
+        "children": [
+          {
+            "id": "var_full_proyecto",
+            "isStructure": false,
+            "type": "variable",
+            "label": "Nombre del proyecto",
+            "required": true,
+            "inputType": "text",
+            "inputPlaceholder": "Ej: Mejoramiento vial tramo norte"
+          },
+          {
+            "id": "var_full_cliente",
+            "isStructure": false,
+            "type": "variable",
+            "label": "Cliente o entidad",
+            "required": false,
+            "inputType": "text",
+            "inputPlaceholder": "Ej: Municipalidad Provincial"
+          },
+          {
+            "id": "var_full_parametro",
+            "isStructure": false,
+            "type": "variable",
+            "label": "Parametro de diseño",
+            "required": true,
+            "inputType": "number",
+            "inputUnit": "m3/s",
+            "inputMin": 0,
+            "inputMax": 9999,
+            "inputPlaceholder": "0.0"
+          }
+        ]
+      },
+      {
+        "id": "sec_full_002_002",
+        "isStructure": true,
+        "level": 2,
+        "title": "Narrativa tecnica",
+        "expanded": true,
+        "canvasExpanded": true,
+        "children": [
+          {
+            "id": "var_full_objetivo",
+            "isStructure": false,
+            "type": "text",
+            "label": "Objetivo del documento",
+            "required": true,
+            "content": "Describe con claridad el objetivo tecnico del documento.",
+            "promptIA": "Redacta el objetivo del documento con tono tecnico, formal y preciso."
+          },
+          {
+            "id": "var_full_alcance",
+            "isStructure": false,
+            "type": "text",
+            "label": "Alcance",
+            "required": true,
+            "content": "Define limites, entregables y criterios de aplicacion.",
+            "promptIA": "Redacta el alcance indicando limites, exclusiones y entregables."
+          },
+          {
+            "id": "var_full_resumen",
+            "isStructure": false,
+            "type": "ai_text",
+            "label": "Resumen ejecutivo",
+            "required": true,
+            "content": "Resumen ejecutivo autogenerado y luego editable.",
+            "promptTemplate": "Redacta un resumen ejecutivo para el proyecto {{var_full_proyecto}}, considerando el objetivo {{var_full_objetivo}}, el alcance {{var_full_alcance}} y el parametro {{var_full_parametro}}.",
+            "inputVariables": [
+              "var_full_proyecto",
+              "var_full_objetivo",
+              "var_full_alcance",
+              "var_full_parametro"
+            ],
+            "generationMode": "manual"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sec_full_003",
+    "isStructure": true,
+    "level": 1,
+    "title": "Entradas tecnicas",
+    "expanded": true,
+    "canvasExpanded": true,
+    "children": [
+      {
+        "id": "var_full_tabla_insumos",
+        "isStructure": false,
+        "type": "table",
+        "label": "Tabla de insumos",
+        "required": true,
+        "columnCount": 4,
+        "columnHeaders": [
+          "Item",
+          "Descripcion",
+          "Fuente",
+          "Observaciones"
+        ],
+        "columnAlign": [
+          "L",
+          "L",
+          "L",
+          "L"
+        ],
+        "tableStyle": "booktabs",
+        "tableEnvironment": "auto",
+        "hasCaption": true,
+        "hasSource": true,
+        "hasDescription": true,
+        "hasLabel": true
+      },
+      {
+        "id": "var_full_tabla_resultados",
+        "isStructure": false,
+        "type": "table",
+        "label": "Tabla de resultados",
+        "required": true,
+        "columnCount": 5,
+        "columnHeaders": [
+          "Muestra",
+          "Valor",
+          "Unidad",
+          "Criterio",
+          "Cumple"
+        ],
+        "columnAlign": [
+          "L",
+          "C",
+          "C",
+          "L",
+          "C"
+        ],
+        "tableStyle": "booktabs",
+        "tableEnvironment": "auto",
+        "hasCaption": true,
+        "hasSource": true,
+        "hasDescription": true,
+        "hasLabel": true
+      },
+      {
+        "id": "var_full_imagen_general",
+        "isStructure": false,
+        "type": "image",
+        "label": "Imagen o plano general",
+        "required": true,
+        "width": "full",
+        "float": true,
+        "hasCaption": true,
+        "hasSource": true,
+        "hasDescription": true,
+        "hasLabel": true
+      },
+      {
+        "id": "var_full_imagen_detalle",
+        "isStructure": false,
+        "type": "image",
+        "label": "Imagen de detalle",
+        "required": false,
+        "width": "half",
+        "float": false,
+        "hasCaption": true,
+        "hasSource": false,
+        "hasDescription": true,
+        "hasLabel": true
+      },
+      {
+        "id": "var_full_formula",
+        "isStructure": false,
+        "type": "latex_graph",
+        "label": "Formula principal",
+        "required": true,
+        "mathType": "align",
+        "content": "Q = A \\\\cdot V",
+        "mathVariables": [
+          "Q",
+          "A",
+          "V"
+        ],
+        "hasLabel": true
+      },
+      {
+        "id": "var_full_grafico",
+        "isStructure": false,
+        "type": "latex_graph",
+        "label": "Expresion complementaria",
+        "required": false,
+        "mathType": "block",
+        "content": "f(x) = x^2 + 2x + 1",
+        "mathVariables": [
+          "x"
+        ],
+        "hasLabel": true
+      }
+    ]
+  },
+  {
+    "id": "sec_full_004",
+    "isStructure": true,
+    "level": 1,
+    "title": "Analisis y conclusiones",
+    "expanded": true,
+    "canvasExpanded": true,
+    "children": [
+      {
+        "id": "sec_full_004_001",
+        "isStructure": true,
+        "level": 2,
+        "title": "Analisis",
+        "expanded": true,
+        "canvasExpanded": true,
+        "children": [
+          {
+            "id": "var_full_analisis",
+            "isStructure": false,
+            "type": "text",
+            "label": "Analisis tecnico",
+            "required": true,
+            "content": "Desarrolla el analisis tecnico principal.",
+            "promptIA": "Redacta un analisis tecnico objetivo, profesional y consistente con los datos de entrada."
+          },
+          {
+            "id": "var_full_riesgo",
+            "isStructure": false,
+            "type": "variable",
+            "label": "Nivel de riesgo",
+            "required": true,
+            "inputType": "select",
+            "inputOptions": [
+              "Bajo",
+              "Medio",
+              "Alto",
+              "Critico"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sec_full_004_002",
+        "isStructure": true,
+        "level": 2,
+        "title": "Cierre",
+        "expanded": true,
+        "canvasExpanded": true,
+        "children": [
+          {
+            "id": "var_full_conclusiones",
+            "isStructure": false,
+            "type": "text",
+            "label": "Conclusiones",
+            "required": true,
+            "content": "Enumera las conclusiones tecnicas principales.",
+            "promptIA": "Redacta conclusiones tecnicas claras, numeradas y consistentes con el analisis."
+          },
+          {
+            "id": "var_full_recomendaciones",
+            "isStructure": false,
+            "type": "ai_text",
+            "label": "Recomendaciones",
+            "required": false,
+            "content": "Recomendaciones tecnicas generadas y editables.",
+            "promptTemplate": "Genera recomendaciones tecnicas a partir del analisis {{var_full_analisis}}, las conclusiones {{var_full_conclusiones}} y el nivel de riesgo {{var_full_riesgo}}.",
+            "inputVariables": [
+              "var_full_analisis",
+              "var_full_conclusiones",
+              "var_full_riesgo"
+            ],
+            "generationMode": "manual"
+          },
+          {
+            "id": "var_full_estado",
+            "isStructure": false,
+            "type": "variable",
+            "label": "Estado del documento",
+            "required": true,
+            "inputType": "select",
+            "inputOptions": [
+              "Borrador",
+              "En revision",
+              "Aprobado",
+              "Observado"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

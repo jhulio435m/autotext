@@ -30,7 +30,20 @@ Referencia:
 
 1. Copia `.env.example` a `.env` (frontend).
 2. Copia `server/.env.example` a `server/.env` (backend).
-3. Edita `server/.env` con credenciales reales de PostgreSQL.
+3. Edita `server/.env` con estas dos familias de variables:
+   - `PLANE_DB_*`: lectura de Plane en modo solo lectura.
+   - `APP_DB_*`: persistencia propia de la app (`app_users`, `app_workspaces`, `app_documents`).
+4. Si quieres usar Plane API (sin leer directo de BD), define:
+   - `PLANE_BASE_URL` (ej: `https://plane.urriburuleon.com`)
+   - `PLANE_WORKSPACE_SLUG`
+   - `PLANE_API_KEY`
+
+Tambien puedes aplicar perfiles prearmados:
+
+```bash
+npm run profile:list
+npm run profile:plane-db
+```
 
 ## 2) Abrir tunel SSH hacia tu servidor Linux
 
@@ -71,7 +84,13 @@ npm run dev:web
 Frontend: `http://127.0.0.1:5173`  
 API: `http://127.0.0.1:4000`
 
-## 4) Verificar puente
+Si estas por SSH y necesitas acceso remoto por IP:
+
+```bash
+npm run dev:full:public
+```
+
+## 4) Verificar puente o API de Plane
 
 Con la API arriba y el tunel activo:
 
@@ -84,6 +103,17 @@ curl "http://127.0.0.1:4000/api/bridge/tables?schema=public"
 ```
 
 Si esos dos responden `ok: true`, el puente ya esta listo.
+
+Nota:
+- Este proyecto no escribe en la BD de Plane. Solo la usa como fuente externa de lectura.
+- La persistencia propia de la app debe vivir en `APP_DB_*`.
+- Los JSON dinamicos de documentos ahora viven en `app_documents` como filas `JSONB` por `usuario + proyecto + documento`, no como un blob unico.
+
+Si configuraste `PLANE_WORKSPACE_SLUG` + `PLANE_API_KEY`, estos endpoints usan Plane API (`/api/v1/...`) en vez de leer desde tablas:
+
+```bash
+curl "http://127.0.0.1:4000/api/plane/projects?limit=50"
+```
 
 Lectura de proyectos de Plane (solo puente):
 
@@ -115,6 +145,7 @@ Cuando definamos endpoints, se activan en `.env`.
 ## Endpoints
 
 - `GET /api/health`
+- `GET /api/integration/status`
 - `GET /api/bridge/health`
 - `GET /api/bridge/tables?schema=public`
 - `GET /api/plane/projects`
@@ -122,6 +153,7 @@ Cuando definamos endpoints, se activan en `.env`.
 
 Esquema recomendado para integraciones:
 - `docs/plane-db-schema.md`
+- `docs/integration-plan.md`
 
 ## Opcional (mas adelante)
 

@@ -1,408 +1,47 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
-:root {
-  color-scheme: light;
-  --brand-50: #e8f3f8;
-  --brand-200: #b7d7e6;
-  --brand-500: #0078ad;
-  --brand-600: #006399;
-  --brand-700: #004f7a;
-  --surface-0: #f7f8fa;
-  --surface-1: #ffffff;
-  --surface-2: #e7ecf3;
-  --text-1: #0f172a;
-  --text-2: #334155;
-  --text-3: #64748b;
-  --line-1: #e2e8f0;
-  --ok-500: #10b981;
-  --warn-500: #f59e0b;
-  --danger-500: #ef4444;
+/* TipTap Styles */
+.ProseMirror {
+  outline: none !important;
 }
 
-* {
-  box-sizing: border-box;
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #adb5bd;
+  pointer-events: none;
+  height: 0;
 }
 
-html,
-body,
-#root {
-  margin: 0;
-  min-height: 100%;
+.ProseMirror blockquote {
+  border-left: 3px solid #e2e8f0;
+  padding-left: 1rem;
+  font-style: italic;
 }
 
-body {
-  background: var(--surface-0);
-  color: var(--text-1);
-  font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+/*
+ * Panels with overflow-y-auto scroll on hover without requiring a prior click.
+ * We give them a high enough stacking context so the wheel event is captured.
+ */
+.panel-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Prevent the parent from capturing wheel events when cursor is inside */
+  overscroll-behavior: contain;
 }
 
-h1,
-h2,
-h3,
-h4 {
-  font-family: inherit;
-  letter-spacing: 0;
+/* Thin, unobtrusive scrollbar for all three panels */
+.panel-scroll::-webkit-scrollbar {
+  width: 5px;
 }
-
-button,
-input,
-textarea,
-select {
-  font: inherit;
-}
-
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes soft-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.42;
-  }
-}
-
-@keyframes pop-in {
-  from {
-    opacity: 0;
-    transform: scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes sheen {
-  from {
-    transform: translateX(-140%);
-  }
-  to {
-    transform: translateX(160%);
-  }
-}
-
-.animate-fade-up {
-  animation: fade-up 220ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
-}
-
-.animate-pop-in {
-  animation: pop-in 150ms ease both;
-}
-
-.soft-panel {
-  border: 1px solid var(--line-1);
-  border-radius: 0.5rem;
-  background: var(--surface-1);
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-}
-
-.glass-panel {
-  border: 1px solid var(--line-1);
-  background: var(--surface-1);
-}
-
-.btn-primary {
-  border: 1px solid var(--brand-600);
-  background: var(--brand-600);
-  color: white;
-  font-weight: 600;
-  border-radius: 0.35rem;
-  font-size: 0.75rem;
-  line-height: 1rem;
-  padding: 0.34rem 0.62rem;
-}
-
-.btn-primary:hover {
-  background: var(--brand-700);
-  border-color: var(--brand-700);
-}
-
-.btn-ghost {
-  border: 1px solid var(--line-1);
-  border-radius: 0.35rem;
-  background: white;
-  color: var(--text-2);
-  font-size: 0.75rem;
-  line-height: 1rem;
-  padding: 0.34rem 0.62rem;
-}
-
-.btn-ghost:hover {
-  border-color: #cbd5e1;
-  background: #f8fafc;
-  color: #334155;
-}
-
-.dot-status {
-  display: inline-flex;
-  height: 0.45rem;
-  width: 0.45rem;
-  border-radius: 999px;
-  animation: soft-pulse 1.2s ease-in-out infinite;
-}
-
-.table-grid td,
-.table-grid th {
-  border: 1px solid #d1d5db;
-  padding: 0.25rem 0.4rem;
-}
-
-.card-sheen {
-  position: relative;
-  overflow: hidden;
-}
-
-.card-sheen::after {
-  display: none;
-}
-
-.card-sheen:hover::after {
-  animation: none;
-}
-
-.plane-doc-card {
-  border: 1px solid var(--line-1);
-  border-radius: 0.5rem;
-  background: #ffffff;
-  box-shadow: none;
-}
-
-.plane-doc-title {
-  margin: 0;
-  color: #334155;
-  font-size: 0.75rem;
-  line-height: 0.95rem;
-  font-weight: 400;
-  letter-spacing: 0;
-}
-
-.plane-doc-chip {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 0.35rem;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-  color: #475569;
-  padding: 0.15rem 0.5rem;
-  font-size: 0.68rem;
-  line-height: 1rem;
-  font-weight: 600;
-}
-
-.plane-doc-chip-label {
-  border-color: #dbeafe;
-  background: #eff6ff;
-  color: #1d4ed8;
-}
-
-.plane-doc-menu-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 0.45rem;
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
-  color: #64748b;
-  font-size: 0.8rem;
-  font-weight: 800;
-}
-
-.plane-doc-menu-item {
-  width: 100%;
-  border: 0;
-  border-radius: 0.4rem;
-  padding: 0.35rem 0.5rem;
-  text-align: left;
-  background: #ffffff;
-  color: #334155;
-}
-
-.plane-doc-menu-item-danger {
-  color: #dc2626;
-}
-
-.plane-doc-open-btn {
-  border: 1px solid var(--line-1);
-  border-radius: 0.35rem;
-  background: #ffffff;
-  color: #0f172a;
-  font-size: 0.7rem;
-  font-weight: 600;
-  line-height: 0.9rem;
-  padding: 0.22rem 0.52rem;
-}
-
-.plane-doc-open-btn:hover {
-  background: var(--brand-50);
-  border-color: var(--brand-200);
-  color: var(--brand-700);
-}
-
-.project-cover-fallback {
-  background: #e9eef6;
-  border: 1px solid #dbe2ea;
-}
-
-.doc-group-panel {
-  border: 1px solid var(--brand-200);
-  border-radius: 0.5rem;
-  background: var(--brand-50);
-}
-
-.doc-group-header {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  border: 0;
-  border-bottom: 1px solid var(--brand-200);
+.panel-scroll::-webkit-scrollbar-track {
   background: transparent;
-  padding: 0.55rem 0.75rem;
-  text-align: left;
 }
-
-.editor-doc-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+.panel-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
 }
-
-.editor-canvas-toolbar {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.editor-toolbar-group {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.editor-icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border: 1px solid var(--line-1);
-  border-radius: 0.35rem;
-  background: #ffffff;
-  color: #475569;
-  font-size: 0.82rem;
-  font-weight: 700;
-  line-height: 1;
-  padding: 0;
-}
-
-.editor-icon-btn:hover {
-  border-color: var(--brand-200);
-  background: var(--brand-50);
-  color: var(--brand-700);
-}
-
-.editor-toolbar-chip {
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid #dbe2ea;
-  border-radius: 0.35rem;
-  background: #f8fafc;
-  color: #475569;
-  padding: 0.22rem 0.5rem;
-  font-size: 0.67rem;
-  font-weight: 600;
-  line-height: 0.95rem;
-}
-
-.editor-layout {
-  display: grid;
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 1280px) {
-  .editor-layout {
-    grid-template-columns: var(--editor-left, minmax(260px, 24%)) minmax(0, 1fr) var(--editor-right, minmax(280px, 24%));
-    transition: grid-template-columns 560ms cubic-bezier(0.22, 1, 0.36, 1) !important;
-  }
-}
-
-.editor-side-panel {
-  transition: opacity 320ms ease !important;
-}
-
-.editor-panel-content {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  opacity: 1;
-  transform: scale(1);
-  transition: opacity 360ms ease, transform 460ms cubic-bezier(0.22, 1, 0.36, 1) !important;
-}
-
-.editor-panel-content--hidden {
-  opacity: 0;
-  transform: scale(0.985);
-  pointer-events: none;
-}
-
-.editor-panel-strip {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  background: #ffffff;
-  color: #64748b;
-  font-size: 15px;
-  font-weight: 700;
-  opacity: 1;
-  transition: opacity 320ms ease !important;
-}
-
-.editor-panel-strip--hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-@media (max-width: 767px) {
-  .editor-doc-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .mobile-readonly {
-    pointer-events: none;
-    opacity: 0.82;
-    filter: grayscale(0.08);
-  }
-}
-
-/* Keep interface static: no decorative motion or transitions. */
-*,
-*::before,
-*::after {
-  animation: none !important;
-  transition: none !important;
+.panel-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }

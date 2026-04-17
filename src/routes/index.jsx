@@ -1,26 +1,37 @@
+import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import Layout from '../layouts/Layout';
-import Login from '../pages/Login';
-import Dashboard from '../pages/Dashboard';
-import Project from '../pages/Project';
-import Document from '../pages/Document';
+
+const Layout = lazy(() => import('../layouts/Layout'));
+const Login = lazy(() => import('../pages/Login'));
+const Dashboard = lazy(() => import('../pages/Dashboard'));
+const Project = lazy(() => import('../pages/Project'));
+const Document = lazy(() => import('../pages/Document'));
+
+function RouteFallback() {
+  return (
+    <div className='min-h-screen bg-[#f6f4ef] text-[#272220] flex items-center justify-center text-sm'>
+      Cargando...
+    </div>
+  );
+}
 
 function AppRoutes() {
   return (
-    <Routes>
-      <Route path='/' element={<Login />} />
+    <Suspense fallback={<RouteFallback />}>
+      <Routes>
+        <Route path='/' element={<Login />} />
 
-      <Route element={<Layout />}>
-        <Route path='/dashboard' element={<Dashboard />} />
-        <Route path='/proyecto/:id/caratula' element={<Project />} />
-        <Route path='/proyecto/:id/documentos' element={<Project />} />
-        <Route path='/proyecto/:id/documento/:docId/editor' element={<Document />} />
-        <Route path='/proyecto/:id/documento/:docId/formulario' element={<Document />} />
-        <Route path='/proyecto/:id/documento/:docId/preview' element={<Document />} />
-      </Route>
+        <Route element={<Layout />}>
+          <Route path='/dashboard' element={<Dashboard />} />
+          <Route path='/proyecto/:id/datos' element={<Project />} />
+          <Route path='/proyecto/:id/documentos' element={<Project />} />
+          <Route path='/proyecto/:id/documento/:docId/:mode' element={<Document />} />
+          <Route path='/proyecto/:id/documento/:docId/preview' element={<Navigate to='../constructor' replace />} />
+        </Route>
 
-      <Route path='*' element={<Navigate to='/' replace />} />
-    </Routes>
+        <Route path='*' element={<Navigate to='/' replace />} />
+      </Routes>
+    </Suspense>
   );
 }
 

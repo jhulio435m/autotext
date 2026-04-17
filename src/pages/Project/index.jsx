@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ChevronDown } from 'lucide-react';
 import useDocumentStore from '../../store';
-import CoverEditor from '../../components/CoverEditor';
 import DocumentCard from '../../components/DocumentCard';
 import { apiGetPlaneProjectIssues, apiGetPlaneProjects } from '../../api/client';
 
@@ -36,7 +36,6 @@ function Project() {
   const usePlaneProjects = import.meta.env.VITE_USE_PLANE_PROJECTS === 'true';
   const usePlaneProjectIssues = import.meta.env.VITE_USE_PLANE_PROJECT_ISSUES === 'true';
   const { id } = useParams();
-  const location = useLocation();
   const navigate = useNavigate();
 
   const projects = useDocumentStore((state) => state.projects);
@@ -52,7 +51,7 @@ function Project() {
   const [collapsedGroups, setCollapsedGroups] = useState({});
 
   const project = projects.find((item) => item.id === id);
-  const activeTab = location.pathname.includes('/caratula') ? 'caratula' : 'documentos';
+  const activeTab = 'documentos';
 
   useEffect(() => {
     if (id) setCurrentProject(id);
@@ -60,11 +59,12 @@ function Project() {
 
   useEffect(() => {
     if (!usePlaneProjects) return undefined;
-    if (project) return undefined;
 
     let cancelled = false;
     const loadProjects = async () => {
-      setLoadingPlaneProjects(true);
+      if (!project) {
+        setLoadingPlaneProjects(true);
+      }
       try {
         const response = await apiGetPlaneProjects({ limit: 200 });
         if (!cancelled && response?.ok && Array.isArray(response.projects)) {
@@ -151,7 +151,7 @@ function Project() {
       <DocumentCard
         key={doc.id}
         doc={doc}
-        onOpen={() => navigate(`/proyecto/${id}/documento/${doc.id}/editor`)}
+        onOpen={() => navigate(`/proyecto/${id}/documento/${doc.id}/constructor`)}
       />
     );
   };
@@ -164,60 +164,81 @@ function Project() {
   };
 
   if (!project && usePlaneProjects && (loadingPlaneProjects || !planeProjectsLoaded)) {
-    return <p className='soft-panel p-4 text-sm text-slate-600'>Cargando proyecto...</p>;
+    return <p className='rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.04)]'>Cargando proyecto...</p>;
   }
 
   if (!project) {
-    return <p className='soft-panel p-4 text-sm text-slate-600'>Proyecto no encontrado.</p>;
+    return <p className='rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.04)]'>Proyecto no encontrado.</p>;
   }
 
   return (
     <section className='space-y-4'>
-      {activeTab === 'caratula' ? (
-        <>
-          <header className='soft-panel animate-fade-up p-4'>
-            <div className='flex justify-end'>
-              <button
-                type='button'
-                className='btn-ghost'
-                onClick={() => navigate(`/proyecto/${id}/documentos`)}
-              >
-                Volver a documentos
-              </button>
+      <header className='rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)]'>
+        <div className='flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between'>
+          <div className='min-w-0'>
+            <div className='flex flex-wrap items-center gap-2'>
+              <span className='inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-600'>
+                {project.code || 'Sin código'}
+              </span>
+              <span className='text-[11px] font-medium uppercase tracking-[0.14em] text-slate-400'>
+                {project.source === 'plane' ? 'Plane' : 'Local'}
+              </span>
             </div>
-          </header>
-          <CoverEditor projectId={id} />
-        </>
-      ) : (
-        <div className='space-y-5'>
+            <h2 className='mt-2 truncate text-xl font-semibold tracking-[-0.02em] text-slate-950'>{project.name}</h2>
+            <p className='mt-1 max-w-3xl text-sm text-slate-500'>
+              {project.description || 'Gestiona documentos y configuración visual de este proyecto.'}
+            </p>
+          </div>
+
+          <div className='flex items-center gap-2'>
+            <button
+              type='button'
+              className={`inline-flex h-9 items-center rounded-lg border px-3 text-sm font-medium transition ${
+                activeTab === 'documentos'
+                  ? 'border-slate-900 bg-slate-900 text-white'
+                  : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+              }`}
+              onClick={() => navigate(`/proyecto/${id}/documentos`)}
+            >
+              Documentos
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className='space-y-5'>
           {groupedDocuments.map((group) => (
-            <section key={group.label} className='doc-group-panel'>
+            <section key={group.label} className='overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]'>
               <button
                 type='button'
-                className='doc-group-header'
+                className='flex w-full items-center justify-between gap-3 border-0 border-b border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-4 py-3 text-left'
                 onClick={() => toggleGroup(group.label)}
                 aria-expanded={!collapsedGroups[group.label]}
               >
-                <h3 className='text-xs font-bold uppercase tracking-wide text-slate-700'>{group.label}</h3>
-                <span className='text-xs font-semibold text-slate-500'>
-                  {group.docs.length} {group.docs.length === 1 ? 'documento' : 'documentos'} {collapsedGroups[group.label] ? '+' : '-'}
+                <div className='min-w-0'>
+                  <h3 className='truncate text-xs font-bold uppercase tracking-[0.16em] text-slate-700'>{group.label}</h3>
+                </div>
+                <span className='inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-500'>
+                  {group.docs.length} {group.docs.length === 1 ? 'documento' : 'documentos'}
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform ${collapsedGroups[group.label] ? '-rotate-90' : 'rotate-0'}`}
+                  />
                 </span>
               </button>
-              <div className={`p-3 ${collapsedGroups[group.label] ? 'hidden' : 'block'}`}>
-                <div className='mx-auto max-w-5xl'>
-                  <div className='grid grid-cols-1 gap-3 md:grid-cols-2'>
-                    {group.docs.map((doc) => renderDocumentCard(doc))}
-                  </div>
+              <div className={collapsedGroups[group.label] ? 'hidden' : 'block'}>
+                <div className='grid grid-cols-1 gap-3 p-4 xl:grid-cols-2'>
+                  {group.docs.map((doc) => renderDocumentCard(doc))}
                 </div>
               </div>
             </section>
           ))}
           {!groupedDocuments.length ? (
-            <div className='soft-panel p-6 text-sm text-slate-500'>Este proyecto aun no tiene documentos.</div>
+            <div className='rounded-xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center shadow-[0_1px_2px_rgba(15,23,42,0.04)]'>
+              <h3 className='text-base font-semibold text-slate-900'>Este proyecto aún no tiene documentos.</h3>
+              <p className='mt-2 text-sm text-slate-500'>Cuando se carguen o sincronicen documentos, aparecerán aquí agrupados por subgrupo.</p>
+            </div>
           ) : null}
         </div>
-      )}
-
     </section>
   );
 }

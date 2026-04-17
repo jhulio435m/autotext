@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Modal from '../Modal';
+import Modal from '../ui/Modal';
 import useDocumentStore from '../../store';
 
 const COLORS = ['#006399', '#1d4ed8', '#4338ca', '#0f766e', '#15803d', '#b45309', '#be123c', '#374151'];
@@ -43,7 +43,7 @@ function NewProjectModal({ onClose }) {
                 key={color}
                 aria-label={`Seleccionar color ${color}`}
                 onClick={() => setAccentColor(color)}
-                className={`h-8 w-8 rounded-full border-2 transition ${accentColor === color ? 'scale-110 border-[var(--brand-600)]' : 'border-transparent'}`}
+                className={`h-8 w-8 rounded-full border-2 transition ${accentColor === color ? 'scale-110 border-sky-700' : 'border-transparent'}`}
                 style={{ backgroundColor: color }}
               />
             ))}
@@ -51,11 +51,11 @@ function NewProjectModal({ onClose }) {
         </div>
 
         <div className='flex justify-end gap-2'>
-          <button type='button' className='btn-ghost px-3 py-2 text-sm' onClick={onClose}>Cancelar</button>
+          <button type='button' className='rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:border-slate-300 hover:bg-slate-50' onClick={onClose}>Cancelar</button>
           <button
             type='button'
             disabled={disabled}
-            className='btn-primary px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50'
+            className='rounded-md border border-sky-700 bg-sky-700 px-3 py-2 text-sm font-semibold text-white hover:border-sky-800 hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-50'
             onClick={() => {
               addProject({ name: name.trim(), description: description.trim(), code: code.trim(), accentColor });
               onClose();
@@ -65,7 +65,7 @@ function NewProjectModal({ onClose }) {
           </button>
         </div>
       </div>
-    </Modal>
+   </Modal>
   );
 }
 

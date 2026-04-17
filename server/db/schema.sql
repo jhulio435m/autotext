@@ -8,9 +8,67 @@ CREATE TABLE IF NOT EXISTS app_users (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS app_workspaces (
-  user_id BIGINT PRIMARY KEY REFERENCES app_users(id) ON DELETE CASCADE,
-  data JSONB NOT NULL DEFAULT '{}'::jsonb,
+CREATE TABLE IF NOT EXISTS app_projects (
+  id TEXT PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT DEFAULT '',
+  code TEXT DEFAULT '',
+  accent_color TEXT DEFAULT '#006399',
+  company_name TEXT DEFAULT '',
+  logo TEXT DEFAULT '',
+  month TEXT DEFAULT '',
+  year TEXT DEFAULT '',
+  cover_photo TEXT DEFAULT '',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Separate project variables (3NF)
+CREATE TABLE IF NOT EXISTS app_project_variables (
+  project_id TEXT NOT NULL REFERENCES app_projects(id) ON DELETE CASCADE,
+  variable_key TEXT NOT NULL,
+  variable_value TEXT,
+  variable_label TEXT DEFAULT '',
+  variable_type TEXT DEFAULT 'text',
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (project_id, variable_key)
+);
+
+CREATE TABLE IF NOT EXISTS app_documents (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES app_projects(id) ON DELETE CASCADE,
+  user_id BIGINT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  type TEXT,
+  description TEXT DEFAULT '',
+  structure JSONB NOT NULL DEFAULT '[]'::jsonb,
+  form_data JSONB NOT NULL DEFAULT '{}'::jsonb,
+  cover_data JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS app_documents_project_idx ON app_documents (project_id, updated_at DESC);
+CREATE INDEX IF NOT EXISTS app_documents_user_idx ON app_documents (user_id);
+
+CREATE TABLE IF NOT EXISTS app_document_locks (
+  document_id TEXT PRIMARY KEY REFERENCES app_documents(id) ON DELETE CASCADE,
+  user_id BIGINT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+  token TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  expires_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS app_templates (
+  id BIGSERIAL PRIMARY KEY,
+  slug TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  data JSONB NOT NULL DEFAULT '[]'::jsonb,
+  is_system BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+

@@ -1,0 +1,209 @@
+import { queryPlaneDb } from '../db.js';
+
+function isSafeIdentifier(value) {
+  return /^[A-Za-z_][A-Za-z0-9_]*$/.test(value || '');
+}
+
+function quoteIdentifier(value) {
+  if (!isSafeIdentifier(value)) {
+    throw new Error(`Invalid SQL identifier: ${value}`);
+  }
+  return `"${value}"`;
+}
+
+export async function getPlaneBridgeHealth() {
+  const result = await queryPlaneDb(
+    'SELECT NOW() AS server_time, current_database() AS database_name, current_user AS db_user'
+  );
+
+  return result.rows[0] || null;
+}
+
+export async function listPlaneTables(schema) {
+  const result = await queryPlaneDb(
+    `SELECT table_name
+     FROM information_schema.tables
+     WHERE table_schema = $1
+     ORDER BY table_name ASC
+     LIMIT 300`,
+    [schema]
+  );
+
+  return result.rows.map((row) => row.table_name);
+}
+
+export async function getPlaneProjectsFromDb({
+  schema,
+  candidateTables,
+  limit,
+  workspaceId,
+  includeDeleted,
+  includeArchived
+}) {
+  const tableMatch = await queryPlaneDb(
+    `SELECT table_name
+     FROM information_schema.tables
+     WHERE table_schema = $1
+       AND table_name = ANY($2::text[])
+     ORDER BY array_position($2::text[], table_name)
+     LIMIT 1`,
+    [schema, candidateTables]
+  );
+
+  if (!tableMatch.rows[0]) {
+    return {
+      found: false,
+      schema,
+      candidates: candidateTables
+    };
+  }
+
+  const table = tableMatch.rows[0].table_name;
+  const columnsResult = await queryPlaneDb(
+    `SELECT column_name
+     FROM information_schema.columns
+     WHERE table_schema = $1
+       AND table_name = $2`,
+    [schema, table]
+  );
+
+  const columnSet = new Set(columnsResult.rows.map((row) => row.column_name));
+  const preferredColumns = [
+    'id',
+    'name',
+    'identifier',
+    'description',
+    'workspace_id',
+    'created_at',
+    'updated_at',
+    'cover_image',
+    'cover_image_asset_id',
+    'deleted_at',
+    'archived_at'
+  ];
+  const selectedColumns = preferredColumns.filter((column) => columnSet.has(column));
+
+  if (selectedColumns.length === 0) {
+    return {
+      found: true,
+      schema,
+      table,
+      selectedColumns
+    };
+  }
+
+  const hasWorkspaceColumn = columnSet.has('workspace_id');
+  const selectSql = selectedColumns.map((column) => quoteIdentifier(column)).join(', ');
+  const fromSql = `${quoteIdentifier(schema)}.${quoteIdentifier(table)}`;
+  const orderColumn = columnSet.has('updated_at')
+    ? 'updated_at'
+    : columnSet.has('created_at')
+      ? 'created_at'
+      : selectedColumns[0];
+
+  let sql = `SELECT ${selectSql} FROM ${fromSql}`;
+  const params = [];
+  const filters = [];
+
+  if (columnSet.has('deleted_at') && !includeDeleted) {
+    filters.push(`${quoteIdentifier('deleted_at')} IS NULL`);
+  }
+
+  if (columnSet.has('archived_at') && !includeArchived) {
+    filters.push(`${quoteIdentifier('archived_at')} IS NULL`);
+  }
+
+  if (workspaceId && hasWorkspaceColumn) {
+    params.push(workspaceId);
+    filters.push(`${quoteIdentifier('workspace_id')}::text = $${params.length}`);
+  }
+
+  if (filters.length > 0) {
+    sql += ` WHERE ${filters.join(' AND ')}`;
+  }
+
+  params.push(limit);
+  sql += ` ORDER BY ${quoteIdentifier(orderColumn)} DESC NULLS LAST LIMIT $${params.length}`;
+
+  const projectsResult = await queryPlaneDb(sql, params);
+
+  return {
+    found: true,
+    schema,
+    table,
+    selectedColumns,
+    rows: projectsResult.rows
+  };
+}
+
+export async function getPlaneProjectIssuesFromDb({
+  projectId,
+  label,
+  limit,
+  includeDeleted,
+  includeArchived
+}) {
+  const params = [projectId, label];
+  const filters = ['i.project_id = $1'];
+
+  if (!includeDeleted) {
+    filters.push('i.deleted_at IS NULL');
+  }
+  if (!includeArchived) {
+    filters.push('i.archived_at IS NULL');
+  }
+
+  params.push(limit);
+
+  const result = await queryPlaneDb(
+    `WITH filtered_issues AS (
+       SELECT
+         i.id,
+         i.name,
+         COALESCE(i.description_stripped, '') AS description,
+         i.updated_at,
+         i.created_at,
+         i.project_id,
+         i.workspace_id,
+         i.archived_at,
+         i.deleted_at
+       FROM public.issues i
+       WHERE ${filters.join(' AND ')}
+         AND EXISTS (
+           SELECT 1
+           FROM public.issue_labels il_filter
+           JOIN public.labels l_filter ON l_filter.id = il_filter.label_id
+           WHERE il_filter.issue_id = i.id
+             AND il_filter.deleted_at IS NULL
+             AND l_filter.deleted_at IS NULL
+             AND LOWER(l_filter.name) = LOWER($2)
+         )
+     )
+     SELECT
+       fi.id,
+       fi.name,
+       fi.description,
+       fi.updated_at,
+       fi.created_at,
+       fi.project_id,
+       fi.workspace_id,
+       fi.archived_at,
+       fi.deleted_at,
+       COALESCE(ARRAY_REMOVE(ARRAY_AGG(DISTINCT l_all.name), NULL), ARRAY[]::text[]) AS labels
+     FROM filtered_issues fi
+     LEFT JOIN public.issue_labels il_all
+       ON il_all.issue_id = fi.id
+      AND il_all.deleted_at IS NULL
+     LEFT JOIN public.labels l_all
+       ON l_all.id = il_all.label_id
+      AND l_all.deleted_at IS NULL
+     GROUP BY
+       fi.id, fi.name, fi.description, fi.updated_at, fi.created_at,
+       fi.project_id, fi.workspace_id, fi.archived_at, fi.deleted_at
+     ORDER BY fi.updated_at DESC NULLS LAST
+     LIMIT $3`,
+    params
+  );
+
+  return result.rows;
+}
