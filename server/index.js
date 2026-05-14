@@ -9,7 +9,8 @@ import { registerAppRoutes } from './routes/app.js';
 import { registerPlaneRoutes } from './routes/plane.js';
 import { registerIntegrationRoutes } from './routes/integration.js';
 import { registerAiRoutes } from './routes/ai.js';
-import { canUsePlaneApi } from './services/plane-api.js';
+import { canUsePlaneApi } from './infrastructure/plane-client.js';
+import { startPlaneSyncInterval } from './features/sync/sync-projects.js';
 import fs from 'node:fs';
 import path from 'node:path';
 

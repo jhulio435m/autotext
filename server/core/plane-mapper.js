@@ -1,15 +1,4 @@
-import { isUuid } from './request-utils.js';
-
-export function canUsePlaneApi(config) {
-  return Boolean(config.planeBaseUrl && config.planeWorkspaceSlug && config.planeApiKey);
-}
-
-export function getPlaneApiHeaders(config) {
-  return {
-    Accept: 'application/json',
-    'X-API-Key': config.planeApiKey
-  };
-}
+import { isUuid } from '../services/request-utils.js';
 
 export function normalizePlaneApiListResponse(payload) {
   if (Array.isArray(payload)) return payload;
@@ -18,49 +7,23 @@ export function normalizePlaneApiListResponse(payload) {
   return [];
 }
 
-export async function fetchPlaneApiJson(config, pathname, query = {}) {
-  const endpoint = new URL(pathname, `${config.planeBaseUrl || ''}/`);
-
-  Object.entries(query).forEach(([key, value]) => {
-    if (value == null || value === '') return;
-    endpoint.searchParams.set(key, String(value));
-  });
-
-  const response = await fetch(endpoint.toString(), {
-    method: 'GET',
-    headers: getPlaneApiHeaders(config),
-    signal: AbortSignal.timeout(Math.max(1000, config.planeApiTimeoutMs || 10000))
-  });
-
-  const contentType = response.headers.get('content-type') || '';
-  const body = contentType.includes('application/json') ? await response.json() : null;
-
-  if (!response.ok) {
-    const message = body?.error || body?.detail || `Plane API responded with ${response.status}`;
-    throw new Error(message);
-  }
-
-  return body;
-}
-
-function getPlaneProtocol(config) {
-  try {
-    if (!config.planeBaseUrl) return 'http:';
-    const parsed = new URL(config.planeBaseUrl);
-    return parsed.protocol || 'http:';
-  } catch {
-    return 'http:';
-  }
-}
-
-function looksLikeHostPath(value) {
-  return /^(?:\d{1,3}(?:\.\d{1,3}){3}|[A-Za-z0-9.-]+\.[A-Za-z]{2,})(?::\d+)?\//.test(value);
-}
-
 export function toAbsolutePlaneUrl(config, rawPath) {
   const value = String(rawPath || '').trim();
   if (!value) return '';
   if (/^https?:\/\//i.test(value)) return value;
+
+  const getPlaneProtocol = (cfg) => {
+    try {
+      if (!cfg.planeBaseUrl) return 'http:';
+      const parsed = new URL(cfg.planeBaseUrl);
+      return parsed.protocol || 'http:';
+    } catch {
+      return 'http:';
+    }
+  };
+
+  const looksLikeHostPath = (val) => /^(?:\d{1,3}(?:\.\d{1,3}){3}|[A-Za-z0-9.-]+\.[A-Za-z]{2,})(?::\d+)?\//.test(val);
+
   if (value.startsWith('//')) return `${getPlaneProtocol(config)}${value}`;
   if (looksLikeHostPath(value)) return `${getPlaneProtocol(config)}//${value}`;
   if (!config.planeBaseUrl) return value;
@@ -68,7 +31,7 @@ export function toAbsolutePlaneUrl(config, rawPath) {
   return `${config.planeBaseUrl}/${value}`;
 }
 
-function extractAssetIdFromStaticPath(rawPath) {
+export function extractAssetIdFromStaticPath(rawPath) {
   const value = String(rawPath || '').trim();
   if (!value) return '';
   const match = value.match(/\/api\/assets\/v2\/static\/([0-9a-f-]{36})\/?/i);
@@ -76,44 +39,10 @@ function extractAssetIdFromStaticPath(rawPath) {
   return isUuid(match[1]) ? match[1] : '';
 }
 
-function buildPlaneAssetProxyUrl(assetId) {
+export function buildPlaneAssetProxyUrl(assetId) {
   const safeId = String(assetId || '').trim();
   if (!isUuid(safeId)) return '';
   return `/api/plane/assets/${safeId}`;
-}
-
-function applyPreferredProtocol(config, urlString) {
-  const preferred = getPlaneProtocol(config);
-  if (!preferred) return urlString;
-  try {
-    const parsed = new URL(urlString);
-    parsed.protocol = preferred;
-    return parsed.toString();
-  } catch {
-    return urlString;
-  }
-}
-
-export async function fetchWithSafeRedirects(config, initialUrl, maxRedirects = 5) {
-  let currentUrl = initialUrl;
-
-  for (let index = 0; index <= maxRedirects; index += 1) {
-    const response = await fetch(currentUrl, { redirect: 'manual' });
-    const status = response.status || 0;
-    const isRedirect = status >= 300 && status < 400;
-
-    if (!isRedirect) {
-      return response;
-    }
-
-    const location = response.headers.get('location');
-    if (!location) return response;
-
-    const nextUrl = new URL(location, currentUrl).toString();
-    currentUrl = applyPreferredProtocol(config, nextUrl);
-  }
-
-  throw new Error('Demasiadas redirecciones al resolver asset de Plane.');
 }
 
 export function resolveProjectCoverUrl(config, projectRow) {

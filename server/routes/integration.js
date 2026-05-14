@@ -6,7 +6,7 @@ import {
   detectIntegrationMode,
   getAvailableProfiles
 } from '../services/integration-profile.js';
-import { canUsePlaneApi } from '../services/plane-api.js';
+import { canUsePlaneApi } from '../infrastructure/plane-client.js';
 
 export function registerIntegrationRoutes(app, deps) {
   const { appPool, config } = deps;

@@ -5,15 +5,17 @@ import {
   listPlaneTables
 } from '../providers/plane-db.js';
 import {
-  canUsePlaneApi,
   fetchPlaneApiJson,
   fetchWithSafeRedirects,
+  canUsePlaneApi
+} from '../infrastructure/plane-client.js';
+import {
   normalizeIssueFromPlaneApi,
   normalizePlaneApiListResponse,
   normalizeProjectFromPlaneApi,
   resolveProjectCoverUrl,
   toAbsolutePlaneUrl
-} from '../services/plane-api.js';
+} from '../core/plane-mapper.js';
 import { clampLimit, isDbConnectivityError, isSafeIdentifier, isUuid, parseBooleanQuery } from '../services/request-utils.js';
 
 export function registerPlaneRoutes(app, deps) {

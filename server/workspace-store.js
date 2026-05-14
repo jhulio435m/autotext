@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import { config } from './config.js';
 import { queryPlaneDb } from './db.js';
-import { resolveProjectCoverUrl, toAbsolutePlaneUrl } from './services/plane-api.js';
+import { resolveProjectCoverUrl, toAbsolutePlaneUrl } from './core/plane-mapper.js';
 
 function isRecord(value) {
   return value != null && typeof value === 'object' && !Array.isArray(value);

@@ -2,7 +2,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { fetchPlaneApiJson, canUsePlaneApi, normalizePlaneApiListResponse } from './plane-api.js';
+import { fetchPlaneApiJson, canUsePlaneApi } from '../infrastructure/plane-client.js';
+import { normalizePlaneApiListResponse } from '../core/plane-mapper.js';
 
 const execFileAsync = promisify(execFile);
 
