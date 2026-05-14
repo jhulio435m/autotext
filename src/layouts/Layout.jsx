@@ -4,10 +4,18 @@ import Header from '../components/Header';
 import Toast from '../components/ui/Toast';
 import useDocumentStore from '../store';
 import { STORAGE_KEYS } from '../constants/storage';
-import { apiGetPlaneProjects, apiGetWorkspace, apiSaveWorkspace } from '../api/client';
+import {
+  apiApplyIntegrationProfile,
+  apiGetIntegrationProfiles,
+  apiGetIntegrationStatus,
+  apiGetPlaneProjects,
+  apiGetWorkspace,
+  apiSaveWorkspace
+} from '../api/client';
 import { AUTH_EXPIRED_EVENT, getSessionToken } from '../api/session';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
+const PENDING_INTEGRATION_PROFILE_KEY = 'autotext.integration.pendingProfile';
 
 function buildWorkspacePayload(state, changedProjectId = null) {
   const serializeDocument = (doc) => {
@@ -124,6 +132,22 @@ function Layout() {
   const saveInFlightRef = useRef(false);
   const queuedSaveRef = useRef(false);
   const activeSaveHashRef = useRef('');
+  const [integrationStatus, setIntegrationStatus] = useState(null);
+  const [integrationProfiles, setIntegrationProfiles] = useState([]);
+  const [integrationLoading, setIntegrationLoading] = useState(true);
+  const [integrationRefreshing, setIntegrationRefreshing] = useState(false);
+  const [integrationApplying, setIntegrationApplying] = useState(false);
+  const [integrationError, setIntegrationError] = useState('');
+  const [integrationLastUpdatedAt, setIntegrationLastUpdatedAt] = useState(null);
+  const [pendingIntegrationProfile, setPendingIntegrationProfile] = useState(() => {
+    try {
+      const raw = localStorage.getItem(PENDING_INTEGRATION_PROFILE_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      return parsed?.profile ? parsed.profile : '';
+    } catch {
+      return '';
+    }
+  });
   const currentDocument = getCurrentDocument();
   const sessionToken = getSessionToken();
 
@@ -279,15 +303,115 @@ function Layout() {
     }
   }, [currentUser]);
 
+  useEffect(() => {
+    let cancelled = false;
+    let pollTimer = null;
+
+    const loadIntegration = async ({ silent = false } = {}) => {
+      if (silent) {
+        setIntegrationRefreshing(true);
+      } else {
+        setIntegrationLoading(true);
+      }
+
+      try {
+        const [statusPayload, profilesPayload] = await Promise.all([
+          apiGetIntegrationStatus(),
+          apiGetIntegrationProfiles()
+        ]);
+
+        if (cancelled) return;
+
+        setIntegrationStatus(statusPayload);
+        setIntegrationProfiles(Array.isArray(profilesPayload?.profiles) ? profilesPayload.profiles : []);
+        setIntegrationError('');
+        setIntegrationLastUpdatedAt(Date.now());
+      } catch (error) {
+        if (cancelled) return;
+        setIntegrationError(error?.message || 'No se pudo leer el estado de integración.');
+      } finally {
+        if (cancelled) return;
+        setIntegrationLoading(false);
+        setIntegrationRefreshing(false);
+      }
+    };
+
+    loadIntegration();
+    pollTimer = window.setInterval(() => {
+      loadIntegration({ silent: true });
+    }, 30000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(pollTimer);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!integrationStatus?.mode || !pendingIntegrationProfile) return;
+    if (integrationStatus.mode !== pendingIntegrationProfile) return;
+
+    setPendingIntegrationProfile('');
+    localStorage.removeItem(PENDING_INTEGRATION_PROFILE_KEY);
+  }, [integrationStatus?.mode, pendingIntegrationProfile]);
+
+  const refreshIntegrationStatus = async () => {
+    setIntegrationRefreshing(true);
+    try {
+      const [statusPayload, profilesPayload] = await Promise.all([
+        apiGetIntegrationStatus(),
+        apiGetIntegrationProfiles()
+      ]);
+      setIntegrationStatus(statusPayload);
+      setIntegrationProfiles(Array.isArray(profilesPayload?.profiles) ? profilesPayload.profiles : []);
+      setIntegrationError('');
+      setIntegrationLastUpdatedAt(Date.now());
+      return statusPayload;
+    } catch (error) {
+      setIntegrationError(error?.message || 'No se pudo actualizar el estado de integración.');
+      throw error;
+    } finally {
+      setIntegrationLoading(false);
+      setIntegrationRefreshing(false);
+    }
+  };
+
+  const applyIntegrationProfile = async (profile) => {
+    setIntegrationApplying(true);
+    try {
+      const response = await apiApplyIntegrationProfile(profile);
+      const pending = response?.profile || profile;
+      setPendingIntegrationProfile(pending);
+      localStorage.setItem(PENDING_INTEGRATION_PROFILE_KEY, JSON.stringify({ profile: pending, requestedAt: Date.now() }));
+      await refreshIntegrationStatus();
+      return response;
+    } finally {
+      setIntegrationApplying(false);
+    }
+  };
+
+  const integrationContext = {
+    status: integrationStatus,
+    profiles: integrationProfiles,
+    loading: integrationLoading,
+    refreshing: integrationRefreshing,
+    applying: integrationApplying,
+    error: integrationError,
+    lastUpdatedAt: integrationLastUpdatedAt,
+    pendingProfile: pendingIntegrationProfile,
+    refresh: refreshIntegrationStatus,
+    applyProfile: applyIntegrationProfile
+  };
+
   if (!currentUser) {
     return <Navigate to='/' replace />;
   }
 
   return (
     <div className='min-h-screen bg-slate-100'>
-      <Header />
+      <Header integration={integrationContext} />
       <main key={location.pathname} className='mx-auto max-w-[1460px] px-4 py-4'>
-        <Outlet />
+        <Outlet context={integrationContext} />
       </main>
 
       <div className='pointer-events-none fixed right-4 top-20 z-40 flex w-[330px] flex-col gap-2'>

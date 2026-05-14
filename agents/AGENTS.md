@@ -9,19 +9,55 @@ Bienvenido al proyecto **Autotext**. Esta guía describe la arquitectura, tecnol
   - `/pages`: Vistas principales de la aplicación.
   - `/store`: Gestión de estado con Zustand.
 - `/server`: Backend desarrollado con Node.js y Express 5.
-  - `/routes`: Endpoints de la API.
-  - `/services`: Lógica de negocio y servicios externos.
+  - `/routes`: Endpoints de la API (flacos, sin lógica de negocio).
+  - `/core`: Lógica de negocio pura (mappers, transformaciones). Sin dependencias de Express/DB.
+  - `/infrastructure`: Clientes HTTP, repositorios SQL, circuit breaker, logger.
+  - `/features`: Orquestación de casos de uso (data-provider, sync).
+  - `/services`: Servicios auxiliares (integración, locks, PDF).
   - `/db`: Esquemas y scripts de base de datos.
+  - `/scripts`: Migraciones y utilidades de BD.
 - `/docs`: Documentación técnica detallada y planes de integración.
 - `/scripts`: Scripts de utilidad para despliegue y configuración.
 - `/agents`: Directorio dedicado a la coordinación de agentes de IA.
+- `/test`: Tests unitarios (Node.js test runner, `node --test`).
+- `/env/profiles`: Perfiles de entorno (local, plane-db, plane-api).
 
 ## 🛠️ Tecnologías Principales
 
-- **Frontend**: React 19, Vite, Tailwind CSS 4, Zustand, Tiptap (Editor de texto), KaTeX (Matemáticas).
-- **Backend**: Node.js, Express 5, PostgreSQL.
-- **Testing**: Node.js test runner integrado (`node --test`).
-- **Infraestructura**: Docker, Cloudflare Tunnels para exposición pública.
+- **Frontend**: React 19, Vite, Tailwind CSS 4, Zustand, Tiptap (Editor de texto), KaTeX (Matemáticas), dnd-kit (drag & drop), fortune-sheet (hojas de cálculo).
+- **Backend**: Node.js, Express 5, PostgreSQL (dual: Plane DB bridge + App DB propia), JWT (auth), OpenAI (generación de texto IA).
+- **Testing**: Node.js test runner integrado (`node --test`), 71 tests unitarios.
+- **Infraestructura**: Docker, Cloudflare Tunnels para exposición pública, LaTeX (texlive) para exportación PDF.
+
+## 📐 Arquitectura de Capas (Backend)
+
+El backend sigue una **Arquitectura de Capas por Funcionalidad**:
+
+```
+routes/  →  features/  →  infrastructure/  +  core/
+  (HTTP)     (orquestación)    (datos externos)   (lógica pura)
+```
+
+- **core/**: Funciones puras de transformación (mappers). No importan Express ni BD.
+- **infrastructure/**: Clientes HTTP, repositorios SQL, circuit breaker, logger.
+- **features/**: Orquestación que coordina infrastructure + core.
+- **routes/**: Puntos de entrada HTTP, delegan a features o infrastructure.
+
+### Módulos de infraestructura clave
+
+- `circuit-breaker.js`: Estados closed/open/half-open. 3 fallos → open, 30s reset.
+- `logger.js`: Logging JSON estructurado con niveles debug/info/warn/error.
+- `plane-client.js`: HTTP client con retry exponential backoff (1s, 2s, 4s).
+
+## Modos de Integración
+
+El sistema opera en 3 modos (sin Frappe):
+
+- `local`: demo/local sin dependencias externas.
+- `plane-db`: lectura de Plane desde PostgreSQL (bridge directo).
+- `plane-api`: lectura de Plane via API REST v1 + API key.
+
+Los modos se conmutan via `POST /api/integration/profile` o scripts npm (`npm run profile:<name>`).
 
 ## 🔄 Flujo de Trabajo (Git & Tareas)
 

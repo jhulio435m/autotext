@@ -11,6 +11,27 @@ export function getPlaneApiHeaders(config) {
   };
 }
 
+async function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchWithRetry(url, options, retries = 3, baseDelayMs = 1000) {
+  let lastError = null;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await fetch(url, options);
+    } catch (error) {
+      lastError = error;
+      if (attempt < retries) {
+        const delay = baseDelayMs * Math.pow(2, attempt - 1);
+        console.warn(`[PLANE_CLIENT] Retry ${attempt}/${retries} after ${delay}ms: ${error.message}`);
+        await sleep(delay);
+      }
+    }
+  }
+  throw lastError;
+}
+
 export async function fetchPlaneApiJson(config, pathname, query = {}) {
   const endpoint = new URL(pathname, `${config.planeBaseUrl || ''}/`);
 
@@ -19,7 +40,7 @@ export async function fetchPlaneApiJson(config, pathname, query = {}) {
     endpoint.searchParams.set(key, String(value));
   });
 
-  const response = await fetch(endpoint.toString(), {
+  const response = await fetchWithRetry(endpoint.toString(), {
     method: 'GET',
     headers: getPlaneApiHeaders(config),
     signal: AbortSignal.timeout(Math.max(1000, config.planeApiTimeoutMs || 10000))

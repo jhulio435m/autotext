@@ -5,6 +5,7 @@ import { getVisibleAdvancedRows, normalizeAdvancedTableValue } from '../../utils
 import { buildTableExportValue } from '../../utils/exportModel.js';
 import FormField from '../FormField';
 import AutoTextarea from '../ui/AutoTextarea';
+import { getBlockCompletionState, getCompletionState } from '../../utils/section-guide';
 
 export function renderMath(expression) {
   try {
@@ -186,6 +187,13 @@ function mergeObjectValue(currentValue, patch) {
   };
 }
 
+function getStateBadgeClassName(tone) {
+  if (tone === 'complete') return 'border-emerald-200 bg-emerald-50 text-emerald-700';
+  if (tone === 'progress') return 'border-sky-200 bg-sky-50 text-sky-700';
+  if (tone === 'pending') return 'border-amber-200 bg-amber-50 text-amber-700';
+  return 'border-slate-200 bg-slate-50 text-slate-600';
+}
+
 function insertTemplateVariable(templateValue, variableKey) {
   const safeTemplate = templateValue || '';
   const token = `{{${variableKey}}}`;
@@ -266,7 +274,7 @@ export function renderPreviewBlock(node, formData, options = {}) {
     }
     return (
       <p className={asDocument ? 'text-sm italic leading-7 text-rose-700' : 'rounded bg-rose-50 px-2 py-1 text-sm text-rose-700'}>
-        [PENDIENTE: {node.label || node.id}]
+        [PENDIENTE: {node.label || 'Campo por completar'}]
       </p>
     );
   }
@@ -469,6 +477,19 @@ export function renderPreviewNode(node, formData, prefix = [], trail = [], optio
     }
 
     const nextTrail = [...trail, node.title];
+    const sectionStats = (node.children || []).reduce(
+      (acc, child) => {
+        if (child?.isStructure) return acc;
+        if (!child?.required) return acc;
+        const childState = getBlockCompletionState(child, formData?.[child.id]);
+        return {
+          required: acc.required + 1,
+          completed: acc.completed + (childState.tone === 'complete' ? 1 : 0)
+        };
+      },
+      { required: 0, completed: 0 }
+    );
+    const sectionState = getCompletionState(sectionStats);
     return (
       <section
         key={node.id}
@@ -476,19 +497,33 @@ export function renderPreviewNode(node, formData, prefix = [], trail = [], optio
         className={options.editableText ? 'mt-6 px-1 py-1' : 'mt-6'}
       >
         <div className='flex flex-wrap items-center gap-2'>
-          {options.editableText ? <span className='text-xs font-semibold text-slate-400'>{prefix.join('.')}</span> : null}
+          {options.editableText ? (
+            <span className='inline-flex rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500'>
+              {prefix.join('.')}
+            </span>
+          ) : null}
+          {options.editableText ? (
+            <span className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] ${getStateBadgeClassName(sectionState.tone)}`}>
+              {sectionState.label}
+            </span>
+          ) : null}
           {options.editableText && options.updateNodeProps ? (
             <input
               type='text'
               value={node.title || ''}
               onChange={(event) => options.updateNodeProps(node.id, { title: event.target.value })}
               onFocus={() => options.setSelectedId?.(node.id)}
-              className='min-w-[220px] flex-1 border border-transparent bg-transparent px-1 py-0.5 text-xl font-bold text-slate-900 outline-none transition hover:border-slate-200 focus:border-sky-300 focus:ring-1 focus:ring-sky-100'
+              className='min-w-[220px] flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 text-xl font-bold text-slate-900 outline-none transition hover:border-slate-200 focus:border-sky-300 focus:ring-1 focus:ring-sky-100'
             />
           ) : (
             <h2 className='text-xl font-bold text-slate-900'>{node.title}</h2>
           )}
         </div>
+        {options.editableText ? (
+          <p className='mt-2 pl-1 text-sm text-slate-500'>
+            {sectionStats.completed}/{sectionStats.required} campos obligatorios completos
+          </p>
+        ) : null}
         {inlineCandidate ? (
           <div className='mt-2 pl-6'>
             {renderPreviewBlock(inlineCandidate, formData, options)}
@@ -506,22 +541,34 @@ export function renderPreviewNode(node, formData, prefix = [], trail = [], optio
       id={`preview-block-${node.id}`}
       key={node.id}
       className={options.editableText
-        ? 'group/preview-block scroll-mt-24 space-y-1.5 border-l border-transparent pl-4 transition hover:border-slate-200'
+        ? 'group/preview-block scroll-mt-24 space-y-1.5 rounded-r-xl border-l-2 border-transparent pl-4 transition hover:border-slate-200'
         : 'scroll-mt-24 border-l border-slate-200 pl-4'}
     >
       {options.editableText && !['text', 'rich_text', 'template_text'].includes(node.type) ? (
         <div className='flex items-start justify-between gap-3'>
-          {options.updateNodeProps ? (
-            <input
-              type='text'
-              value={node.label || ''}
-              onChange={(event) => options.updateNodeProps(node.id, { label: event.target.value })}
-              onFocus={() => options.setSelectedId?.(node.id)}
-              className='w-full max-w-xl border border-transparent bg-transparent px-1 py-0.5 text-sm font-semibold text-slate-700 outline-none transition hover:border-slate-200 focus:border-sky-300 focus:ring-1 focus:ring-sky-100'
-            />
-          ) : (
-            <h3 className='text-sm font-semibold text-slate-700'>{node.label || node.id}</h3>
-          )}
+          <div className='min-w-0 flex-1'>
+            <div className='mb-1 flex flex-wrap items-center gap-2'>
+              <span className='text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400'>
+                {node.type === 'variable' ? 'Campo' : 'Contenido'}
+              </span>
+              <span
+                className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${getStateBadgeClassName(getBlockCompletionState(node, formData[node.id]).tone)}`}
+              >
+                {getBlockCompletionState(node, formData[node.id]).label}
+              </span>
+            </div>
+            {options.updateNodeProps ? (
+              <input
+                type='text'
+                value={node.label || ''}
+                onChange={(event) => options.updateNodeProps(node.id, { label: event.target.value })}
+                onFocus={() => options.setSelectedId?.(node.id)}
+                className='w-full max-w-xl rounded-lg border border-transparent bg-transparent px-1 py-0.5 text-sm font-semibold text-slate-700 outline-none transition hover:border-slate-200 focus:border-sky-300 focus:ring-1 focus:ring-sky-100'
+              />
+            ) : (
+              <h3 className='text-sm font-semibold text-slate-700'>{node.label || 'Campo'}</h3>
+            )}
+          </div>
           <button
             type='button'
             className='shrink-0 border border-transparent px-2 py-0.5 text-[11px] text-slate-400 opacity-0 transition group-hover/preview-block:opacity-100 hover:border-slate-200 hover:text-slate-600'

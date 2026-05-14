@@ -238,6 +238,17 @@ Completar el documento sin pensar en la implementación.
 
 ### Reglas
 
+## Estado implementado
+
+Las prioridades altas ya aplicadas en editor/formulario son:
+
+- panel jerárquico con indentación real, conectores y distinción entre secciones y contenidos;
+- sidebar lateral en el formulario para navegar secciones y ver progreso obligatorio;
+- estados visibles unificados para `Pendiente`, `Obligatorio`, `En progreso` y `Completo`;
+- acciones destructivas o de mantenimiento mostradas por contexto para reducir ruido.
+
+Estas piezas deben mantenerse coherentes en futuras iteraciones y no volver a introducir etiquetas técnicas visibles como `id` o `nodo`.
+
 - mostrar agrupación por sección;
 - mostrar pendientes por sección;
 - permitir saltar a una sección;

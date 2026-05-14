@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROFILE="${1:-}"
 
 if [[ -z "$PROFILE" ]]; then
-  echo "Usage: scripts/use-profile.sh <local|plane-db|plane-api|frappe>"
+  echo "Usage: scripts/use-profile.sh <local|plane-db|plane-api>"
   exit 1
 fi
 

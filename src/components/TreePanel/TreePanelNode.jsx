@@ -1,5 +1,16 @@
-import { ChevronRight, GripVertical, Trash2, Bookmark } from 'lucide-react';
+import { AlignLeft, Braces, GripVertical, Image as ImageIcon, Sigma, Table, Trash2, Bookmark } from 'lucide-react';
 import { getTreeDropPosition } from './helpers';
+
+const BLOCK_META = {
+  text: { label: 'Texto', Icon: AlignLeft },
+  rich_text: { label: 'Texto', Icon: AlignLeft },
+  template_text: { label: 'Texto plantilla', Icon: Braces },
+  variable: { label: 'Campo', Icon: Braces },
+  table: { label: 'Tabla', Icon: Table },
+  image: { label: 'Imagen', Icon: ImageIcon },
+  latex_graph: { label: 'Fórmula', Icon: Sigma },
+  ai_text: { label: 'Texto IA', Icon: AlignLeft }
+};
 
 export default function TreePanelNode({
   node,
@@ -23,27 +34,45 @@ export default function TreePanelNode({
   setDropPosition,
   setPendingDeleteNodeId
 }) {
-  if (!node.isStructure) return null;
-
-  const hasStructureChildren = (node.children || []).some((child) => child?.isStructure);
+  const hasChildren = Array.isArray(node.children) && node.children.length > 0;
   const isEditing = editingId === node.id;
   const selected = selectedId === node.id;
   const showAbove = overId === node.id && dropPosition === 'above';
   const showBelow = overId === node.id && dropPosition === 'below';
   const showInside = overId === node.id && dropPosition === 'inside';
+  const level = node.isStructure ? Math.max(1, Number(node.level) || depth + 1) : null;
+  const blockMeta = BLOCK_META[node.type] || { label: 'Contenido', Icon: AlignLeft };
+  const RowIcon = node.isStructure ? Bookmark : blockMeta.Icon;
+  const title = node.isStructure ? node.title || 'Sección' : node.label || 'Campo';
+  const badgeLabel = node.isStructure ? `Sección nivel ${level}` : blockMeta.label;
+  const badgeClassName = node.isStructure
+    ? selected
+      ? 'border-white/15 bg-white/15 text-white'
+      : 'border-sky-100 bg-sky-50 text-sky-700'
+    : selected
+      ? 'border-white/15 bg-white/15 text-white'
+      : 'border-slate-200 bg-slate-50 text-slate-600';
 
   const isLast = depthTrail[depthTrail.length - 1];
   const isFirstRoot = depth === 0 && isFirst;
+  const rowClassName = selected
+    ? node.isStructure
+      ? 'bg-sky-700 text-white shadow-[0_10px_20px_rgba(14,116,144,0.18)]'
+      : 'bg-slate-900 text-white shadow-[0_10px_20px_rgba(15,23,42,0.16)]'
+    : node.isStructure
+      ? 'bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] text-slate-700 hover:bg-sky-50/70'
+      : 'bg-white text-slate-600 hover:bg-slate-50';
+  const titleClassName = selected ? 'text-white' : node.isStructure ? 'text-slate-900' : 'text-slate-700';
+  const subtitleClassName = selected ? 'text-white/75' : 'text-slate-400';
+  const guideColorClass = selected ? 'border-white/35' : node.isStructure ? 'border-sky-300/80' : 'border-slate-300/90';
 
   return (
     <div key={node.id} className='relative group'>
       {showAbove ? <div className='absolute left-0 right-0 top-0 z-[2] h-0.5 rounded-full bg-sky-500' /> : null}
 
       <div
-        className={`group relative flex items-center rounded-sm py-1 pr-2 transition-colors ${
-          !selected && 'text-slate-700 hover:bg-slate-50'
-        }`}
-        style={{ paddingLeft: `${depth * 16 + 24}px` }}
+        className={`group relative flex items-center gap-2 rounded-2xl py-2 pr-2 transition-all ${rowClassName}`}
+        style={{ paddingLeft: `${depth * 18 + 24}px` }}
         tabIndex={0}
         onClick={() => setSelectedId(node.id)}
         onKeyDown={(event) => {
@@ -57,14 +86,14 @@ export default function TreePanelNode({
         onDragOver={(event) => {
           if (!draggedId || draggedId === node.id) return;
           event.preventDefault();
-          const position = getTreeDropPosition(event.clientY, event.currentTarget.getBoundingClientRect(), true);
+          const position = getTreeDropPosition(event.clientY, event.currentTarget.getBoundingClientRect(), node.isStructure);
           setOverId(node.id);
           setDropPosition(position);
         }}
         onDrop={(event) => {
           if (!draggedId || draggedId === node.id) return;
           event.preventDefault();
-          const position = getTreeDropPosition(event.clientY, event.currentTarget.getBoundingClientRect(), true);
+          const position = getTreeDropPosition(event.clientY, event.currentTarget.getBoundingClientRect(), node.isStructure);
           moveNode(draggedId, node.id, position);
           setDraggedId(null);
           setOverId(null);
@@ -73,33 +102,32 @@ export default function TreePanelNode({
       >
         {/* Baldosas de líneas estructurales (absolutas a la fila de alto fijo) */}
         {depthTrail.slice(0, -1).map((isLastAncestor, i) => (
-          !isLastAncestor && <div key={`anc-${i}`} className="pointer-events-none absolute top-0 bottom-0 z-[1] w-px border-l border-dotted border-slate-400" style={{ left: `${i * 16 + 8}px` }} />
+          !isLastAncestor && <div key={`anc-${i}`} className={`pointer-events-none absolute top-0 bottom-0 z-[1] w-px border-l border-dashed ${guideColorClass}`} style={{ left: `${i * 18 + 8}px` }} />
         ))}
-        {/* Tronco Central */}
         <div 
-          className="pointer-events-none absolute z-[1] w-px border-l border-dotted border-slate-400" 
-          style={{ left: `${depth * 16 + 8}px`, top: isFirstRoot ? '50%' : '0', bottom: isLast ? '50%' : '0' }} 
+          className={`pointer-events-none absolute z-[1] w-px border-l border-dashed ${guideColorClass}`}
+          style={{ left: `${depth * 18 + 8}px`, top: isFirstRoot ? '50%' : '0', bottom: isLast ? '50%' : '0' }}
         />
-        {/* Rama Horizontal */}
-        <div className="pointer-events-none absolute top-1/2 z-[1] h-px border-t border-dotted border-slate-400" style={{ left: `${depth * 16 + 8}px`, width: '16px' }} />
+        <div className={`pointer-events-none absolute top-1/2 z-[1] h-px border-t border-dashed ${guideColorClass}`} style={{ left: `${depth * 18 + 8}px`, width: '18px' }} />
         
-        {/* Caja de Expansión [+] / [-] */}
-        {hasStructureChildren && (
+        {node.isStructure && hasChildren && (
           <button
             type='button'
             aria-label='Expandir o colapsar'
-            className='absolute z-10 grid h-[9px] w-[9px] cursor-pointer place-items-center border border-slate-400 bg-white text-slate-800 transition-colors hover:border-slate-500'
-            style={{ left: `${depth * 16 + 8}px`, top: '50%', transform: 'translate(-50%, -50%)' }}
+            className='absolute z-10 grid h-4 w-4 cursor-pointer place-items-center rounded-full border border-slate-300 bg-white text-slate-700 transition-colors hover:border-slate-400'
+            style={{ left: `${depth * 18 + 8}px`, top: '50%', transform: 'translate(-50%, -50%)' }}
             onClick={(event) => {
               event.stopPropagation();
               toggleNodeExpanded(node.id);
             }}
           >
-            <span className='block text-[9px] font-bold leading-none' style={{ marginTop: '-1px' }}>{node.expanded ? '−' : '+'}</span>
+            <span className='block text-[10px] font-bold leading-none' style={{ marginTop: '-1px' }}>{node.expanded ? '−' : '+'}</span>
           </button>
         )}
 
-        <Bookmark className={`shrink-0 relative z-[2] mr-1.5 h-[14px] w-[14px] bg-transparent ${selected ? 'text-orange-500' : 'text-slate-600'}`} />
+        <div className={`relative z-[2] flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border ${selected ? 'border-white/15 bg-white/10' : node.isStructure ? 'border-sky-100 bg-sky-50' : 'border-slate-200 bg-slate-50'}`}>
+          <RowIcon className={`h-[15px] w-[15px] ${selected ? 'text-white' : node.isStructure ? 'text-sky-700' : 'text-slate-500'}`} />
+        </div>
 
         <div className='min-w-0 flex-1'>
           {isEditing ? (
@@ -114,8 +142,20 @@ export default function TreePanelNode({
               className='w-full outline-none rounded bg-white border border-sky-300 px-1.5 py-0.5 text-[13px] shadow-sm focus:border-sky-500'
             />
           ) : (
-            <div className='flex min-w-0 items-center'>
-              <p className={`truncate text-[13px] leading-5 ${selected ? 'bg-sky-600 text-white px-1.5 rounded-[3px] -ml-1.5 font-normal' : 'text-slate-700 group-hover:text-slate-900 font-normal'}`}>{node.title}</p>
+            <div className='min-w-0'>
+              <div className='flex min-w-0 items-center gap-2'>
+                <p className={`truncate text-[13px] font-semibold leading-5 ${titleClassName}`}>{title}</p>
+                <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${badgeClassName}`}>
+                  {badgeLabel}
+                </span>
+              </div>
+              <p className={`mt-0.5 truncate text-[11px] ${subtitleClassName}`}>
+                {node.isStructure
+                  ? `Dentro del documento · profundidad ${depth + 1}`
+                  : node.required
+                    ? 'Campo obligatorio'
+                    : 'Contenido opcional'}
+              </p>
             </div>
           )}
         </div>

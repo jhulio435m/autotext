@@ -1,7 +1,6 @@
 import { checkAppDbConnection, checkPlaneDbConnection, queryPlaneDb } from '../db.js';
 import {
   applyIntegrationProfile,
-  checkFrappeStatus,
   checkPlaneApiStatus,
   detectIntegrationMode,
   getAvailableProfiles
@@ -12,7 +11,7 @@ export function registerIntegrationRoutes(app, deps) {
   const { appPool, config } = deps;
 
   app.get('/api/integration/status', async (_req, res) => {
-    const [planeApi, frappe] = await Promise.all([checkPlaneApiStatus(config), checkFrappeStatus(config)]);
+    const [planeApi] = await Promise.all([checkPlaneApiStatus(config)]);
 
     let db = {
       enabled: true,
@@ -85,8 +84,7 @@ export function registerIntegrationRoutes(app, deps) {
       providers: {
         database: db,
         appDatabase,
-        planeApi,
-        frappe
+        planeApi
       }
     });
   });

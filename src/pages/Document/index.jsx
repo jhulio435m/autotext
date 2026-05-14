@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import TreePanel from '../../components/TreePanel';
 import DragDropCanvas from '../../components/DragDropCanvas';
 import PropertyPanelModal from '../../components/PropertyPanel';
@@ -7,12 +7,14 @@ import Preview from '../../components/Preview';
 import useDocumentStore from '../../store';
 import ProjectDataEditor from '../../components/ProjectDataEditor';
 import DocumentBuilder from '../../components/DocumentBuilder';
+import DocumentPreview from '../../components/DocumentPreview';
 import { useDocumentRouteState } from './useDocumentRouteState';
 
 function Document() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { id, docId, mode: paramMode } = useParams();
-  const mode = paramMode || 'constructor';
+  const mode = paramMode || (location.pathname.endsWith('/preview') ? 'preview' : 'constructor');
   const {
     doc,
     leftCollapsed,
@@ -70,6 +72,10 @@ function Document() {
 
   if (mode === 'constructor') {
     return <DocumentBuilder />;
+  }
+
+  if (mode === 'preview') {
+    return <DocumentPreview />;
   }
 
   if (isLockedByAnotherUser) {

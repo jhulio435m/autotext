@@ -86,8 +86,8 @@ function TreePanel({ collapsed = false, onToggleCollapsed }) {
 
       <ConfirmDialog
         open={Boolean(pendingDeleteNodeId)}
-        title='Eliminar sección'
-        message='Esta acción eliminará la sección seleccionada y sus hijos.'
+        title='Eliminar elemento'
+        message='Esta acción eliminará el elemento seleccionado y sus hijos.'
         onCancel={() => setPendingDeleteNodeId(null)}
         onConfirm={() => {
           if (pendingDeleteNodeId) removeNode(pendingDeleteNodeId);

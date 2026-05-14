@@ -1,4 +1,4 @@
-import { isBlockValueEmpty } from './latex';
+import { isBlockValueEmpty } from './latex.js';
 
 function countRequiredStats(nodes, formData) {
   return (nodes || []).reduce(
@@ -49,3 +49,53 @@ export function buildSectionGuide(nodes, formData, prefix = [], trail = []) {
   });
 }
 
+export function getCompletionState({ required = 0, completed = 0, pending = null } = {}) {
+  const resolvedPending = pending == null ? Math.max(0, required - completed) : pending;
+
+  if (required <= 0) {
+    return {
+      tone: 'neutral',
+      label: 'Sin obligatorios'
+    };
+  }
+
+  if (resolvedPending <= 0) {
+    return {
+      tone: 'complete',
+      label: 'Completo'
+    };
+  }
+
+  if (completed > 0) {
+    return {
+      tone: 'progress',
+      label: 'En progreso'
+    };
+  }
+
+  return {
+    tone: 'pending',
+    label: 'Pendiente'
+  };
+}
+
+export function getBlockCompletionState(node, value) {
+  if (!node?.required) {
+    return {
+      tone: 'neutral',
+      label: 'Opcional'
+    };
+  }
+
+  if (isBlockValueEmpty(node, value)) {
+    return {
+      tone: 'pending',
+      label: 'Obligatorio'
+    };
+  }
+
+  return {
+    tone: 'complete',
+    label: 'Completo'
+  };
+}

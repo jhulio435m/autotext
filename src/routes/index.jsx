@@ -26,7 +26,8 @@ function AppRoutes() {
           <Route path='/proyecto/:id/datos' element={<Project />} />
           <Route path='/proyecto/:id/documentos' element={<Project />} />
           <Route path='/proyecto/:id/documento/:docId/:mode' element={<Document />} />
-          <Route path='/proyecto/:id/documento/:docId/preview' element={<Navigate to='../constructor' replace />} />
+          <Route path='/proyecto/:id/documento/:docId/preview' element={<Document />} />
+          <Route path='/proyecto/:id/documento/:docId' element={<Document />} />
         </Route>
 
         <Route path='*' element={<Navigate to='/' replace />} />

@@ -4,28 +4,6 @@ Este proyecto ahora tiene:
 - Frontend Vite/React (`src/`)
 - API Node/Express (`server/index.js`)
 - Modo puente para PostgreSQL remoto por SSH
-- Stack ERPNext/Frappe en Docker (`frappe/`)
-
-## Frappe/ERPNext (app tipo ERP)
-
-Si quieres operar como ERP (backend Frappe completo), usa:
-
-```powershell
-Copy-Item .\frappe\.env.example .\frappe\.env
-npm run erp:init
-npm run erp:up
-```
-
-Acceso por defecto:
-
-- URL: `http://localhost:8088`
-- Usuario: `Administrator`
-- Password: el valor `SITE_ADMIN_PASSWORD` de `frappe/.env`
-
-Referencia:
-
-- `frappe/README.md`
-
 ## 1) Configurar variables de entorno
 
 1. Copia `.env.example` a `.env` (frontend).

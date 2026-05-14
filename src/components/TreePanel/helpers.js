@@ -17,7 +17,13 @@ export function filterStructureTree(nodes, normalizedQuery) {
   const filterTree = (items) => {
     const next = [];
     (items || []).forEach((node) => {
-      if (!node.isStructure) return;
+      if (!node?.isStructure) {
+        const ownMatch = `${node?.label || ''} ${node?.type || ''}`.toLowerCase().includes(normalizedQuery);
+        if (ownMatch) {
+          next.push(node);
+        }
+        return;
+      }
       const children = filterTree(node.children || []);
       const ownMatch = String(node.title || '').toLowerCase().includes(normalizedQuery);
       if (ownMatch || children.length) {

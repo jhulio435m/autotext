@@ -25,7 +25,7 @@ function normalizePreviewColor(value) {
   return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(color) ? color : '#006399';
 }
 
-function Preview({ embedded = false, editableText = false }) {
+function Preview({ embedded = false, editableText = false, scrollContainerId = '' }) {
   const [zoom, setZoom] = useState(embedded ? 62 : 100);
 
   const structure = useDocumentStore((state) => state.structure);
@@ -156,7 +156,10 @@ function Preview({ embedded = false, editableText = false }) {
         onExportPdf={handleExportPdf}
       />
 
-      <div className={`panel-scroll flex-1 overflow-x-hidden rounded-lg border border-slate-200 bg-slate-100 shadow-[0_1px_2px_rgba(15,23,42,0.04)] ${embedded ? 'p-2' : 'p-6'}`}>
+      <div
+        id={scrollContainerId || undefined}
+        className={`panel-scroll flex-1 overflow-x-hidden rounded-lg border border-slate-200 bg-slate-100 shadow-[0_1px_2px_rgba(15,23,42,0.04)] ${embedded ? 'p-2' : 'p-6'}`}
+      >
         {/* Outer: constrains width to scaled size, centers the page, no height clip */}
         <div
           style={{

@@ -18,12 +18,7 @@
     "profile:local": "bash scripts/use-profile.sh local",
     "profile:plane-db": "bash scripts/use-profile.sh plane-db",
     "profile:plane-api": "bash scripts/use-profile.sh plane-api",
-    "profile:frappe": "bash scripts/use-profile.sh frappe",
-    "erp:init": "docker compose --env-file frappe/.env -f frappe/compose.yml up configurator create-site",
-    "erp:up": "docker compose --env-file frappe/.env -f frappe/compose.yml up -d",
-    "erp:down": "docker compose --env-file frappe/.env -f frappe/compose.yml down",
-    "erp:logs": "docker compose --env-file frappe/.env -f frappe/compose.yml logs -f frontend backend websocket scheduler queue-short queue-long",
-    "erp:ps": "docker compose --env-file frappe/.env -f frappe/compose.yml ps",
+
     "db:init": "node server/scripts/init-db.js",
     "test": "node --test",
     "test:unit": "node --test test/**/*.test.js",

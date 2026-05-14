@@ -18,4 +18,4 @@ repro_export_error.js
 stress_test_persistence.js
 test_db.js
 compose.yml.bak-*
-frappe/sites
+

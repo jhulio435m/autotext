@@ -4,14 +4,16 @@ import { LayoutDashboard, FileEdit, FileText, LogOut, FolderOpen } from 'lucide-
 import useDocumentStore from '../../store';
 import Breadcrumb from '../ui/Breadcrumb';
 import SaveIndicator from '../ui/SaveIndicator';
+import { formatIntegrationMode, getIntegrationHealth } from '../../utils/integrationStatus';
 
 const modeLabel = {
   constructor: 'Constructor',
   editor: 'Avanzado',
-  datos: 'Datos'
+  datos: 'Datos',
+  preview: 'Vista previa'
 };
 
-function Header() {
+function Header({ integration }) {
   const navigate = useNavigate();
   const location = useLocation();
   const params = useParams();
@@ -27,9 +29,10 @@ function Header() {
   const logout = useDocumentStore((state) => state.logout);
 
   const docMatch = useMatch('/proyecto/:id/documento/:docId/:mode');
-  const isDocumentRoute = Boolean(docMatch);
-  const docParams = docMatch?.params || params;
-  const currentMode = docParams.mode || 'constructor';
+  const previewMatch = useMatch('/proyecto/:id/documento/:docId/preview');
+  const isDocumentRoute = Boolean(docMatch || previewMatch);
+  const docParams = (docMatch || previewMatch)?.params || params;
+  const currentMode = docParams.mode || (previewMatch ? 'preview' : 'constructor');
   const activeProject = projects.find((project) => project.id === docParams.id);
   const activeDocument = (documents[docParams.id] || []).find((doc) => doc.id === docParams.docId);
 
@@ -92,6 +95,7 @@ function Header() {
 
   const modeButtons = [
     { value: 'constructor', icon: <FileText className="w-3.5 h-3.5" />, label: 'Constructor' },
+    { value: 'preview', icon: <FileText className="w-3.5 h-3.5" />, label: 'Vista previa' },
     { value: 'datos', icon: <FolderOpen className="w-3.5 h-3.5" />, label: 'Datos' },
     { value: 'editor', icon: <FileEdit className="w-3.5 h-3.5" />, label: 'Avanzado' }
   ];
@@ -102,6 +106,23 @@ function Header() {
     .join('')
     .slice(0, 2)
     .toUpperCase();
+  const integrationHealth = getIntegrationHealth(integration?.status);
+  const healthClassName =
+    integrationHealth.tone === 'ok'
+      ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+      : integrationHealth.tone === 'warn'
+        ? 'border-amber-200 bg-amber-50 text-amber-700'
+        : integrationHealth.tone === 'error'
+          ? 'border-rose-200 bg-rose-50 text-rose-700'
+          : 'border-slate-200 bg-slate-50 text-slate-600';
+  const healthDotClassName =
+    integrationHealth.tone === 'ok'
+      ? 'bg-emerald-500'
+      : integrationHealth.tone === 'warn'
+        ? 'bg-amber-500'
+        : integrationHealth.tone === 'error'
+          ? 'bg-rose-500'
+          : 'bg-slate-400';
 
   // Handle clicking outside to close the dropdown menu
   useEffect(() => {
@@ -153,6 +174,15 @@ function Header() {
         </div>
 
         <div className='flex shrink-0 items-center gap-3'>
+          <div
+            className={`hidden lg:flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-semibold tracking-[0.08em] ${healthClassName}`}
+            title={integrationHealth.detail}
+          >
+            <span className={`h-2.5 w-2.5 rounded-full ${healthDotClassName}`} />
+            <span>{formatIntegrationMode(integration?.status?.mode || 'local')}</span>
+            <span className='text-current/80'>{integrationHealth.shortLabel}</span>
+          </div>
+
           {isDocumentRoute ? (
             <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200 shadow-inner">
               {modeButtons.map((button) => {
@@ -236,6 +266,18 @@ function Header() {
           </div>
         </div>
       ) : null}
+
+      <div className='border-t border-slate-100 bg-slate-50/80 px-4 py-1.5 lg:hidden'>
+        <div className='mx-auto flex max-w-[1460px] items-center justify-between gap-3 text-[11px] font-medium text-slate-600'>
+          <div className='flex min-w-0 items-center gap-2'>
+            <span className={`h-2.5 w-2.5 rounded-full ${healthDotClassName}`} />
+            <span className='truncate'>
+              {formatIntegrationMode(integration?.status?.mode || 'local')} · {integrationHealth.shortLabel}
+            </span>
+          </div>
+          <span className='truncate text-slate-500'>{integration?.pendingProfile ? 'Reinicio pendiente' : 'Salud de integración'}</span>
+        </div>
+      </div>
     </header>
   );
 }

@@ -10,12 +10,11 @@ const execFileAsync = promisify(execFile);
 export function detectIntegrationMode(config) {
   if (canUsePlaneApi(config)) return 'plane_api';
   if (String(config.planeDb.database || '').toLowerCase() === 'plane') return 'plane_db';
-  if (config.frappeBaseUrl) return 'frappe';
   return 'local';
 }
 
 export function getAvailableProfiles() {
-  return ['local', 'plane-db', 'plane-api', 'frappe'];
+  return ['local', 'plane-db', 'plane-api'];
 }
 
 export async function applyIntegrationProfile(config, profile) {
@@ -112,40 +111,4 @@ export async function checkPlaneApiStatus(config) {
   }
 }
 
-export async function checkFrappeStatus(config) {
-  if (!config.frappeBaseUrl) {
-    return {
-      enabled: false,
-      ok: false,
-      reason: 'FRAPPE_BASE_URL no configurado'
-    };
-  }
 
-  const headers = { Accept: 'application/json' };
-  if (config.frappeApiKey && config.frappeApiSecret) {
-    headers.Authorization = `token ${config.frappeApiKey}:${config.frappeApiSecret}`;
-  }
-
-  try {
-    const target = new URL('/api/method/ping', `${config.frappeBaseUrl}/`).toString();
-    const response = await fetch(target, {
-      method: 'GET',
-      headers,
-      signal: AbortSignal.timeout(Math.max(1000, config.planeApiTimeoutMs || 10000))
-    });
-
-    return {
-      enabled: true,
-      ok: response.ok,
-      status: response.status,
-      baseUrl: config.frappeBaseUrl
-    };
-  } catch (error) {
-    return {
-      enabled: true,
-      ok: false,
-      baseUrl: config.frappeBaseUrl,
-      error: error?.message || 'frappe_check_failed'
-    };
-  }
-}
