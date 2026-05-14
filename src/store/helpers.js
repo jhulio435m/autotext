@@ -21,7 +21,7 @@ function nowISO() {
 
 function createVersionSnapshot(doc, label = 'Autosave') {
   return {
-    id: `ver_${nanoid(8)}`,
+    id: `ver_${nanoid(12)}`,
     label,
     createdAt: nowISO(),
     structure: deepClone(doc.structure || []),

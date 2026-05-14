@@ -123,7 +123,7 @@ function createEditorSlice(set, get) {
 
       if (sourceNode._templateFormData) {
         set((state) => ({
-          formData: { ...state.formData, [newNode.id]: sourceNode._templateFormData }
+          formData: { ...state.formData, [newNode.id]: deepClone(sourceNode._templateFormData) }
         }));
       }
     },

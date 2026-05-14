@@ -45,7 +45,7 @@ export function createDocumentFromTemplate({ state, projectId, name, type, descr
   }
 
   return {
-    id: `doc_${nanoid(8)}`,
+    id: `doc_${nanoid(12)}`,
     name,
     type,
     description,
@@ -69,7 +69,7 @@ export function createDuplicatedDocument(doc) {
 
   return {
     ...doc,
-    id: `doc_${nanoid(8)}`,
+    id: `doc_${nanoid(12)}`,
     name: `${doc.name} (Copia)`,
     version: 'v0.1',
     updatedAt: nowISO(),
@@ -86,14 +86,14 @@ export function createDuplicatedDocument(doc) {
 }
 
 export function createDuplicatedProject(state, project, projectId) {
-  const nextProjectId = `proj_${nanoid(8)}`;
+  const nextProjectId = `proj_${nanoid(12)}`;
   const sourceDocs = state.documents[projectId] || [];
 
   const duplicatedDocs = sourceDocs.map((doc) => {
     const template = cloneTemplateFromDocument(doc);
     return {
       ...doc,
-      id: `doc_${nanoid(8)}`,
+      id: `doc_${nanoid(12)}`,
       name: `${doc.name} (Copia)`,
       version: 'v0.1',
       updatedAt: nowISO(),
@@ -118,7 +118,7 @@ export function createDuplicatedProject(state, project, projectId) {
 
 export function createProjectRecord({ name, description, code, accentColor }) {
   return {
-    id: `proj_${nanoid(8)}`,
+    id: `proj_${nanoid(12)}`,
     name,
     description: description || '',
     code: code || '',

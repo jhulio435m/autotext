@@ -27,7 +27,7 @@ function createSessionSlice(set) {
     setWorkspaceHydrated: (workspaceHydrated) => set({ workspaceHydrated: Boolean(workspaceHydrated) }),
 
     pushToast: (message, type = 'info') => {
-      const id = `toast_${nanoid(8)}`;
+      const id = `toast_${nanoid(12)}`;
       set((state) => ({ toasts: [...state.toasts, { id, message, type }] }));
       return id;
     },

@@ -6,6 +6,7 @@ import ImageUploader from '../ImageUploader';
 import MathEditor from '../MathEditor';
 import AutoTextarea from '../ui/AutoTextarea';
 import RichTextEditor from '../ui/RichTextEditor';
+import { deepClone } from '../../utils/document';
 
 export default function BlockTemplateEditorModal({ open, onClose, blockKey, initialBlock, onSave }) {
   const [nodeProps, setNodeProps] = useState({});
@@ -13,8 +14,8 @@ export default function BlockTemplateEditorModal({ open, onClose, blockKey, init
 
   useEffect(() => {
     if (open && initialBlock) {
-      setNodeProps({ id: blockKey, type: initialBlock.type, ...(initialBlock.nodeProps || {}) });
-      setFormData(initialBlock.formData || {});
+      setNodeProps({ id: blockKey, type: initialBlock.type, ...deepClone(initialBlock.nodeProps || {}) });
+      setFormData(deepClone(initialBlock.formData || {}));
     }
   }, [open, initialBlock, blockKey]);
 
@@ -34,7 +35,7 @@ export default function BlockTemplateEditorModal({ open, onClose, blockKey, init
              Contenido del Bloque ({blockType})
            </h3>
            <div className='bg-white p-4 rounded-lg border border-slate-200 shadow-sm'>
-             {blockType === 'table' && <TableEditor block={nodeProps} value={formData} onChange={handleUpdateData} />}
+             {blockType === 'table' && <TableEditor block={nodeProps} value={formData} onChange={handleUpdateData} onUpdateProps={handleUpdateProps} />}
              {blockType === 'image' && <ImageUploader block={nodeProps} value={formData} onChange={handleUpdateData} />}
              {blockType === 'latex_graph' && (
                <MathEditor 

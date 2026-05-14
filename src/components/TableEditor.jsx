@@ -80,9 +80,10 @@ function spreadsheetToTableValue(rawData, results, rawMerge, prevMeta) {
 
 /* ── Main component ──────────────────────────────────────────── */
 
-function TableEditor({ block, value, onChange }) {
+function TableEditor({ block, value, onChange, onUpdateProps }) {
   const pushToast     = useDocumentStore((s) => s.pushToast);
-  const updateNodeProps = useDocumentStore((s) => s.updateNodeProps);
+  const storeUpdateNodeProps = useDocumentStore((s) => s.updateNodeProps);
+  const effectiveUpdateNodeProps = onUpdateProps || storeUpdateNodeProps;
 
   // Determine grid size — default to a small table if no data yet
   const hasData = Array.isArray(value?.rows) && value.rows.length > 0;
@@ -116,7 +117,7 @@ function TableEditor({ block, value, onChange }) {
     };
     ['mergeCells', 'count', 'headers', 'leadingTitleRow', 'columnAlign', 'columnWeights', 'useLandscape'].forEach(k => delete nextValue[k]);
     onChange(nextValue);
-    updateNodeProps(block.id, { columnCount: Math.max(1, Number(cleaned.count) || 1) });
+    effectiveUpdateNodeProps(block.id, { columnCount: Math.max(1, Number(cleaned.count) || 1) });
     pushToast('Tabla limpiada: se recortaron filas y columnas vacías.', 'success');
   };
 

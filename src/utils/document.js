@@ -1,13 +1,13 @@
 import { nanoid } from 'nanoid';
 
-export const newSectionId = () => `sec_${nanoid(8)}`;
-export const newBlockId = () => `var_${nanoid(8)}`;
+export const newSectionId = () => `sec_${nanoid(12)}`;
+export const newBlockId = () => `var_${nanoid(12)}`;
 
 export function normalizeBlockType(type) {
   if (type === 'input') return 'variable';
   if (type === 'math') return 'latex_graph';
   if (type === 'advanced_table') return 'table';
-  if (type === 'rich_text' || type === 'template_text') return type;
+  if (type === 'rich_text' || type === 'template_text' || type === 'image') return type;
   return type || 'text';
 }
 

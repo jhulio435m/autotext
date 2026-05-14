@@ -77,12 +77,18 @@ export default function BlocksTab({ projectId }) {
 
   const openBlockEditor = (v) => {
     setActiveBlockKey(v.key);
-    let parsed = { type: 'table', nodeProps: { label: v.label, id: v.key } };
+    // Use 'text' as a safer fallback than 'table' if parsing fails
+    let parsed = { type: 'text', nodeProps: { label: v.label, id: v.key } };
     try {
-      if (typeof v.value === 'string' && (v.value.startsWith('{') || v.value.startsWith('['))) {
-        parsed = JSON.parse(v.value);
+      if (typeof v.value === 'string' && (v.value.trim().startsWith('{') || v.value.trim().startsWith('['))) {
+        const result = JSON.parse(v.value);
+        if (result && result.type) {
+          parsed = result;
+        }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('Error parsing block data:', e);
+    }
     
     setActiveBlockData(parsed);
     setEditorModalOpen(true);
