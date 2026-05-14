@@ -31,7 +31,7 @@ Bienvenido al proyecto **Autotext**. Esta guía describe la arquitectura, tecnol
    - Comando: `git checkout -b task/nombre-tarea`
 3. **Ejecución**: El agente debe leer la tarea, investigar el código y realizar los cambios necesarios siguiendo las mejores prácticas del proyecto.
 4. **Pruebas**: Siempre ejecutar los tests relevantes antes de dar por terminada una tarea (`npm test`).
-5. **Finalización**: Una vez que la tarea ha sido completada y verificada, el agente **DEBE** renombrar el archivo de la tarea agregando el sufijo `.done`.
+5. **Finalización y Documentación**: Una vez que la tarea ha sido completada y verificada, el agente **DEBE** actualizar cualquier documentación técnica relevante en el directorio `/docs` para reflejar los cambios realizados. Finalmente, debe renombrar el archivo de la tarea agregando el sufijo `.done`.
    - Ejemplo: `agents/tasks/fix-bug.md` -> `agents/tasks/fix-bug.done.md`.
 6. **Commits y PRs**:
    - Realizar commits descriptivos.
@@ -42,3 +42,4 @@ Bienvenido al proyecto **Autotext**. Esta guía describe la arquitectura, tecnol
 - **Seguridad**: Nunca expongas credenciales o claves de API.
 - **Calidad**: Mantén la consistencia de estilos y patrones de diseño existentes.
 - **Validación**: No des por terminada una tarea sin verificar que los cambios funcionan como se espera.
+- **Documentación**: Mantén los archivos en `/docs` siempre actualizados. Si cambias la arquitectura o añades una funcionalidad, la documentación debe reflejarlo inmediatamente.

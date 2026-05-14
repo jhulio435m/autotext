@@ -27,13 +27,14 @@ Unificar el proyecto para que pueda operar en 4 modos de forma controlada, con e
 - Banner de salud en frontend para mostrar origen real de datos.
 - Validaciones de inicio para evitar configuraciones incompletas.
 
-## Fase 3 (2-4 dias)
+## Fase 3 (En curso - TASK-002/003)
 
-- Capa de adaptadores de datos:
-  - `PlaneDbProvider`
-  - `PlaneApiProvider`
-  - `FrappeProvider`
-- Misma forma de respuesta para frontend (contrato unico).
+- Capa de adaptadores de datos y arquitectura de capas:
+  - Implementación de `server/core` para mappers de datos.
+  - Implementación de `server/infrastructure` para clientes de API y repositorios.
+  - Implementación de `server/features` para orquestación.
+  - Adaptadores: `PlaneDbProvider`, `PlaneApiProvider`.
+- Misma forma de respuesta para frontend (contrato único).
 - Test de contrato por proveedor.
 
 ## Fase 4 (2-3 dias)
