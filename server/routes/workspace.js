@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import { loadWorkspaceState, saveWorkspaceState } from '../workspace-store.js';
 import { parseWorkspace } from './app-helpers.js';
+import { validateWorkspacePayload } from '../services/input-validation.js';
 
 export function registerWorkspaceRoutes(app, deps) {
   const { appPool, authRequired } = deps;
@@ -118,6 +119,12 @@ export function registerWorkspaceRoutes(app, deps) {
   });
 
   app.put('/api/workspace', authRequired, async (req, res) => {
+    const validation = validateWorkspacePayload(req.body);
+    if (!validation.valid) {
+      res.status(400).json({ error: 'workspace invalido.', details: validation.errors });
+      return;
+    }
+
     const logPath = '/home/yeul/autotext/route_hits.log';
     try {
       fs.appendFileSync(logPath, `[${new Date().toISOString()}] PUT /api/workspace user=${req.auth.userId}\n`);
