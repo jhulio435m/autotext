@@ -2,6 +2,7 @@ import { registerAuthRoutes } from './auth.js';
 import { registerWorkspaceRoutes } from './workspace.js';
 import { registerDocumentRoutes } from './documents.js';
 import { registerTemplateRoutes } from './templates.js';
+import { registerAdminRoutes } from './admin.js';
 
 export function registerAppRoutes(app, deps) {
   const { config } = deps;
@@ -11,6 +12,7 @@ export function registerAppRoutes(app, deps) {
   }
 
   registerAuthRoutes(app, deps);
+  registerAdminRoutes(app, deps);
   registerWorkspaceRoutes(app, deps);
   registerDocumentRoutes(app, deps);
   registerTemplateRoutes(app, deps);
