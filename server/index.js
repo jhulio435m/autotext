@@ -92,7 +92,8 @@ function normalizeUserRow(row) {
     id: row.id,
     email: row.email,
     name: row.name,
-    role: row.role
+    role: row.role,
+    avatar: row.avatar || null
   };
 }
 

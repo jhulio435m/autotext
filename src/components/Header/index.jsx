@@ -223,10 +223,14 @@ function Header({ integration }) {
             <button
               type="button"
               onClick={() => setMenuOpen((o) => !o)}
-              className="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition shadow-sm outline-none focus:ring-2 focus:ring-slate-200 focus:ring-offset-1"
+              className="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition shadow-sm outline-none focus:ring-2 focus:ring-slate-200 focus:ring-offset-1 overflow-hidden"
               title={currentUser?.name || 'Usuario'}
             >
-              <span className="text-[11px] font-bold text-slate-700">{initials}</span>
+              {currentUser?.avatar ? (
+                <img src={currentUser.avatar} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-[11px] font-bold text-slate-700">{initials}</span>
+              )}
             </button>
 
             {menuOpen && (
