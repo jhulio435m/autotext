@@ -29,7 +29,7 @@
     "@fortune-sheet/react": "^1.0.4",
     "@tiptap/extension-mention": "^3.22.0",
     "@tiptap/extension-placeholder": "^3.20.5",
-    "@tiptap/pm": "^3.20.5",
+    "@tiptap/pm": "^3.24.0",
     "@tiptap/react": "^3.20.5",
     "@tiptap/starter-kit": "^3.20.5",
     "bcryptjs": "^3.0.3",
