@@ -1,6 +1,7 @@
 node_modules/
 .env
 *.bak
+*.bak
 *.pid
 tmp_test_latex/
 route_hits.log

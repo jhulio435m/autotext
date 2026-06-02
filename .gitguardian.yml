@@ -1,3 +1,4 @@
 version: 2
 paths-ignore:
   - 'server/security/common-passwords.txt'
+  - 'env/**'
