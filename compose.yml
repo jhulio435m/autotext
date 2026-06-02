@@ -1,5 +1,6 @@
 services:
   autotext:
+    image: ${AUTOTEXT_IMAGE:-ghcr.io/jhulio435m/autotext:main}
     build: .
     container_name: autotext
     restart: unless-stopped
