@@ -16,6 +16,7 @@ import {
   validatePasswordPolicy,
   verifyPassword
 } from '../services/auth-security.js';
+import { sendPasswordResetEmail } from '../services/email.js';
 
 function sendAuthFailure(res) {
   res.status(401).json({ error: AUTH_FAILURE_MESSAGE });
@@ -303,6 +304,9 @@ export function registerAuthRoutes(app, deps) {
           [row.id, reset.tokenHash, reset.expiresAt]
         );
         logger.info('auth', 'password_reset_requested', sanitizeAuthLog({ userId: row.id, email: row.email }));
+        sendPasswordResetEmail(row.email, reset.token).catch((err) => {
+          logger.error('auth', 'password_reset_email_failed', sanitizeAuthLog({ userId: row.id, email: row.email, error: err?.message || err }));
+        });
         res.json({ ...generic, resetToken: process.env.NODE_ENV === 'production' ? undefined : reset.token });
         return;
       }

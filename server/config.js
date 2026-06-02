@@ -112,5 +112,14 @@ export const config = {
   aiMaxBlocksPerRequest: parseInteger(process.env.AI_MAX_BLOCKS_PER_REQUEST, 20, { min: 1, max: 200 }),
   openaiApiKey: String(process.env.OPENAI_API_KEY || '').trim(),
   openaiModel: String(process.env.OPENAI_MODEL || 'gpt-4o-mini').trim(),
-  openaiTimeoutMs: parseInteger(process.env.OPENAI_TIMEOUT_MS, 30000, { min: 1000, max: 180000 })
+  openaiTimeoutMs: parseInteger(process.env.OPENAI_TIMEOUT_MS, 30000, { min: 1000, max: 180000 }),
+  appBaseUrl: normalizeBaseUrl(process.env.APP_BASE_URL || 'http://127.0.0.1:4000'),
+  smtp: {
+    host: String(process.env.SMTP_HOST || '').trim(),
+    port: parseInteger(process.env.SMTP_PORT, 587, { min: 1, max: 65535 }),
+    secure: parseBoolean(process.env.SMTP_SECURE, false),
+    user: String(process.env.SMTP_USER || '').trim(),
+    pass: String(process.env.SMTP_PASS || '').trim(),
+    from: String(process.env.SMTP_FROM || 'noreply@autotext.urriburuleon.com').trim()
+  }
 };
