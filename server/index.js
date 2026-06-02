@@ -193,6 +193,12 @@ const authIpRateLimit = createInMemoryRateLimiter({
     return `ip:${forwarded || req.ip || 'anonymous'}`;
   }
 });
+const apiRateLimit = createInMemoryRateLimiter({
+  maxRequests: config.apiRateLimitMax,
+  windowMs: config.apiRateLimitWindowMs,
+  keyFn: (req) => req.auth?.userId || req.ip || req.headers['x-forwarded-for'] || 'anonymous'
+});
+
 const aiRateLimit = createInMemoryRateLimiter({
   maxRequests: config.aiRateLimitMaxRequests,
   windowMs: config.aiRateLimitWindowMs,
@@ -201,6 +207,24 @@ const aiRateLimit = createInMemoryRateLimiter({
 
 app.use('/api/auth/login', authIpRateLimit, authRateLimit);
 app.use('/api/auth/register', authIpRateLimit, authRateLimit);
+
+const apiRateLimitedAuth = [apiRateLimit];
+const apiRateLimited = [authRequired, apiRateLimit];
+const apiRateLimitedOptional = [authOptionalInDev, apiRateLimit];
+
+app.use('/api/auth/forgot-password', ...apiRateLimitedAuth);
+app.use('/api/auth/reset-password', ...apiRateLimitedAuth);
+app.use('/api/auth/me', ...apiRateLimited);
+app.use('/api/auth/sessions', ...apiRateLimited);
+app.use('/api/auth/logout', ...apiRateLimited);
+app.use('/api/auth/change-password', ...apiRateLimited);
+app.use('/api/admin', ...apiRateLimited);
+app.use('/api/workspace', ...apiRateLimitedOptional);
+app.use('/api/projects', ...apiRateLimitedOptional);
+app.use('/api/documents', ...apiRateLimitedOptional);
+app.use('/api/templates', ...apiRateLimitedOptional);
+app.use('/api/integration', ...apiRateLimitedOptional);
+
 registerAppRoutes(app, { appPool, config, authRequired, authOptionalInDev, requireAdmin, createToken, normalizeUserRow });
 registerIntegrationRoutes(app, { appPool, config, authRequired, authOptionalInDev });
 registerPlaneRoutes(app, { config });

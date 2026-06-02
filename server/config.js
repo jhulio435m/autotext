@@ -91,6 +91,8 @@ export const config = {
     min: 1000,
     max: 24 * 60 * 60 * 1000
   }),
+  apiRateLimitMax: parseInteger(process.env.API_RATE_LIMIT_MAX, 60, { min: 1, max: 1000 }),
+  apiRateLimitWindowMs: parseInteger(process.env.API_RATE_LIMIT_WINDOW_MS, 60000, { min: 1000, max: 3600000 }),
   authSessionCookieEnabled: parseBoolean(process.env.AUTH_SESSION_COOKIE_ENABLED, false),
   authSessionCookieSecure: parseBoolean(process.env.AUTH_SESSION_COOKIE_SECURE, false),
   planeDb: buildDbConfig('PLANE_DB', legacyDb),
