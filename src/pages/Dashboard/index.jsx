@@ -3,6 +3,8 @@ import { useNavigate, useOutletContext } from 'react-router-dom';
 import { AlertTriangle, CheckCircle2, RefreshCcw, Search, Settings2 } from 'lucide-react';
 import useDocumentStore from '../../store';
 import ProjectCard from '../../components/ProjectCard';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import { apiDeleteProject } from '../../api/client';
 import {
   formatIntegrationMode,
   getIntegrationAlerts,
@@ -21,6 +23,7 @@ function Dashboard() {
 
   const [query, setQuery] = useState('');
   const [selectedProfile, setSelectedProfile] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -41,6 +44,19 @@ function Dashboard() {
   const integrationHealth = getIntegrationHealth(integration?.status, effectiveSelectedProfile);
   const integrationAlerts = getIntegrationAlerts(integration?.status, effectiveSelectedProfile, integration?.pendingProfile);
   const providerCards = getProviderCards(integration?.status);
+
+  const handleDeleteProject = async () => {
+    if (!deleteConfirm) return;
+    try {
+      await apiDeleteProject(deleteConfirm.id);
+      useDocumentStore.getState().removeProject(deleteConfirm.id);
+      pushToast('Proyecto eliminado.', 'success');
+    } catch (error) {
+      pushToast(`No se pudo eliminar: ${error?.message || 'error desconocido'}`, 'error');
+    } finally {
+      setDeleteConfirm(null);
+    }
+  };
 
   const applyProfileChange = async () => {
     try {
@@ -276,10 +292,20 @@ function Dashboard() {
               project={project}
               onEdit={() => navigate(`/proyecto/${project.id}/datos`)}
               onOpen={() => navigate(`/proyecto/${project.id}/documentos`)}
+              onDelete={() => setDeleteConfirm(project)}
             />
           ))}
         </div>
       )}
+      {deleteConfirm ? (
+        <ConfirmDialog
+          open
+          title='Eliminar proyecto'
+          message={`Esta accion eliminara permanentemente "${deleteConfirm.name}" y todos sus documentos. No se puede deshacer.`}
+          onCancel={() => setDeleteConfirm(null)}
+          onConfirm={handleDeleteProject}
+        />
+      ) : null}
     </section>
   );
 }

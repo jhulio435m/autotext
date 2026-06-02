@@ -1,3 +1,5 @@
+import { Trash2 } from 'lucide-react';
+
 function formatUpdatedAt(value) {
   if (!value) return 'Sin fecha';
 
@@ -11,7 +13,7 @@ function formatUpdatedAt(value) {
   }).format(date);
 }
 
-function DocumentCard({ doc, onOpen }) {
+function DocumentCard({ doc, onOpen, onDelete }) {
   const sourceLabel = doc.source === 'plane_issue' ? 'Plane' : 'Local';
 
   return (
@@ -30,13 +32,24 @@ function DocumentCard({ doc, onOpen }) {
             </h4>
           </div>
 
-          <button
-            type='button'
-            className='inline-flex h-9 shrink-0 items-center rounded-lg bg-slate-900 px-3 text-sm font-medium text-white transition hover:bg-slate-800'
-            onClick={onOpen}
-          >
-            Abrir
-          </button>
+          <div className='flex items-center gap-2'>
+            {onDelete ? (
+              <button
+                type='button'
+                onClick={onDelete}
+                className='inline-flex h-9 shrink-0 items-center rounded-lg border border-rose-200 bg-white px-3 text-sm font-medium text-rose-600 transition hover:bg-rose-50'
+              >
+                <Trash2 className='w-4 h-4' />
+              </button>
+            ) : null}
+            <button
+              type='button'
+              className='inline-flex h-9 shrink-0 items-center rounded-lg bg-slate-900 px-3 text-sm font-medium text-white transition hover:bg-slate-800'
+              onClick={onOpen}
+            >
+              Abrir
+            </button>
+          </div>
         </div>
 
         <p className='line-clamp-2 min-h-[40px] text-sm leading-5 text-slate-500'>

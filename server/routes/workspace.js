@@ -70,6 +70,53 @@ export function registerWorkspaceRoutes(app, deps) {
     }
   });
 
+  app.delete('/api/projects/:projectId', authRequired, async (req, res) => {
+    const projectId = String(req.params.projectId || '').trim();
+    if (!projectId) {
+      res.status(400).json({ error: 'Proyecto invalido.' });
+      return;
+    }
+
+    try {
+      const result = await appPool.query(
+        'DELETE FROM app_projects WHERE id = $1 AND user_id = $2 RETURNING id',
+        [projectId, req.auth.userId]
+      );
+      if (result.rowCount === 0) {
+        res.status(404).json({ error: 'Proyecto no encontrado.' });
+        return;
+      }
+      res.json({ ok: true });
+    } catch (error) {
+      console.error('project_delete_error', error);
+      res.status(500).json({ error: 'No se pudo eliminar el proyecto.' });
+    }
+  });
+
+  app.delete('/api/documents/:projectId/:documentId', authRequired, async (req, res) => {
+    const projectId = String(req.params.projectId || '').trim();
+    const documentId = String(req.params.documentId || '').trim();
+    if (!projectId || !documentId) {
+      res.status(400).json({ error: 'Proyecto o documento invalido.' });
+      return;
+    }
+
+    try {
+      const result = await appPool.query(
+        'DELETE FROM app_documents WHERE id = $1 AND project_id = $2 AND user_id = $3 RETURNING id',
+        [documentId, projectId, req.auth.userId]
+      );
+      if (result.rowCount === 0) {
+        res.status(404).json({ error: 'Documento no encontrado.' });
+        return;
+      }
+      res.json({ ok: true });
+    } catch (error) {
+      console.error('document_delete_error', error);
+      res.status(500).json({ error: 'No se pudo eliminar el documento.' });
+    }
+  });
+
   app.put('/api/workspace', authRequired, async (req, res) => {
     const logPath = '/home/yeul/autotext/route_hits.log';
     try {
