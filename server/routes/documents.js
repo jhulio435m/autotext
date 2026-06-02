@@ -8,6 +8,7 @@ import { generateDocumentLatex } from '../document-export.js';
 import { getDocumentLock, isLockExpired, normalizeLock, purgeExpiredLock } from '../services/document-locks.js';
 import { parseDocumentPayload } from './app-helpers.js';
 import { materializePayloadAssets } from '../services/pdf-assets.js';
+import { emitLockEvent, subscribeLockEvents } from '../services/lock-events.js';
 import { loadDocumentState } from '../workspace-store.js';
 
 const execFileAsync = promisify(execFile);
@@ -141,6 +142,7 @@ export function registerDocumentRoutes(app, deps) {
       );
 
       const nextLock = await getDocumentLock(appPool, documentId);
+      emitLockEvent(null, { type: 'lock-acquired', documentId, userId: req.auth.userId });
       res.json({ ok: true, token, lock: normalizeLock(nextLock, req.auth.userId, token) });
     } catch (error) {
       console.error('document_lock_acquire_error', error);
@@ -200,11 +202,16 @@ export function registerDocumentRoutes(app, deps) {
         "DELETE FROM app_document_locks WHERE document_id = $1 AND user_id = $2 AND ($3 = '' OR token = $3)",
         [documentId, req.auth.userId, token]
       );
+      emitLockEvent(null, { type: 'lock-released', documentId, userId: req.auth.userId });
       res.json({ ok: true });
     } catch (error) {
       console.error('document_lock_release_error', error);
       res.status(500).json({ error: 'No se pudo liberar el lock del documento.' });
     }
+  });
+
+  app.get('/api/documents/locks/events', authRequired, (req, res) => {
+    subscribeLockEvents(req, res);
   });
 
   app.post('/api/documents/export/tex', authOptionalInDev, async (req, res) => {
