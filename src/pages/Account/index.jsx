@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { KeyRound, Save, ShieldCheck, UserRound, XCircle } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Camera, KeyRound, Save, ShieldCheck, UserRound, XCircle } from 'lucide-react';
 import { apiChangePassword, apiGetCurrentUser, apiListSessions, apiRevokeOtherSessions, apiRevokeSession, apiUpdateCurrentUser } from '../../api/client';
 import useDocumentStore from '../../store';
 import { createSuggestedPassword, getPasswordStrength } from '../../utils/passwordStrength';
@@ -16,11 +16,13 @@ function Account() {
   const [sessions, setSessions] = useState([]);
   const [sessionsError, setSessionsError] = useState('');
   const [sessionsLoading, setSessionsLoading] = useState(false);
+  const [avatarData, setAvatarData] = useState(null);
   const [passwords, setPasswords] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
+  const fileInputRef = useRef(null);
 
 
 
@@ -64,17 +66,38 @@ function Account() {
     return profileName.trim().replace(/\s+/g, ' ') !== String(currentUser?.name || '').trim().replace(/\s+/g, ' ');
   }, [currentUser?.name, profileName]);
 
+  const handleAvatarChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (file.size > 500000) {
+      setProfileError('La imagen no debe superar los 500 KB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setAvatarData(reader.result);
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveAvatar = () => {
+    setAvatarData('');
+  };
+
   const handleProfileSubmit = async (event) => {
     event.preventDefault();
     setProfileError('');
     setProfileLoading(true);
 
     try {
-      const payload = await apiUpdateCurrentUser({ name: profileName });
+      const body = { name: profileName };
+      if (avatarData !== null) {
+        body.avatar = avatarData;
+      }
+      const payload = await apiUpdateCurrentUser(body);
       if (payload?.user) {
         setCurrentUser(payload.user);
         setProfileName(payload.user.name || '');
       }
+      setAvatarData(null);
       pushToast('Perfil actualizado.', 'success');
     } catch (error) {
       setProfileError(error?.message || 'No se pudo actualizar el perfil.');
@@ -153,6 +176,27 @@ function Account() {
           <div className='mb-4'>
             <h2 className='text-base font-semibold text-slate-900'>Perfil</h2>
             <p className='mt-1 text-sm text-slate-500'>Este nombre aparece en la sesion y en el menu de usuario.</p>
+          </div>
+
+          <div className='mb-4 flex items-center gap-3'>
+            <div className='relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-full border border-slate-200 bg-slate-100'>
+              {avatarData || currentUser?.avatar ? (
+                <img src={avatarData || currentUser.avatar} alt="" className='h-full w-full object-cover' />
+              ) : (
+                <div className='flex h-full w-full items-center justify-center text-lg font-bold text-slate-500'>
+                  {(currentUser?.name || 'U').charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+            <div>
+              <button type='button' onClick={() => fileInputRef.current?.click()} className='inline-flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50'>
+                <Camera className='h-4 w-4' />
+                {currentUser?.avatar ? 'Cambiar foto' : 'Subir foto'}
+              </button>
+              <input ref={fileInputRef} type='file' accept='image/png,image/jpeg,image/webp' onChange={handleAvatarChange} className='hidden' />
+              {avatarData ? <p className='mt-1 text-xs text-slate-500'>Nueva foto lista para guardar.</p> : null}
+              {currentUser?.avatar && avatarData === null ? <button type='button' onClick={handleRemoveAvatar} className='mt-1 block text-xs font-semibold text-rose-600 hover:text-rose-800'>Eliminar foto</button> : null}
+            </div>
           </div>
 
           <label className='block text-sm font-medium text-slate-700' htmlFor='account-name'>

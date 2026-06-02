@@ -479,7 +479,7 @@ export function registerAuthRoutes(app, deps) {
   app.get('/api/auth/me', authRequired, async (req, res) => {
     try {
       const result = await appPool.query(
-        `SELECT id, email, name, role
+        `SELECT id, email, name, role, avatar
          FROM app_users
          WHERE id = $1
          LIMIT 1`,
@@ -492,7 +492,7 @@ export function registerAuthRoutes(app, deps) {
         return;
       }
 
-      res.json({ user: normalizeUserRow(row) });
+      res.json({ user: normalizeUserRow(row), avatar: row.avatar || null });
     } catch (error) {
       logger.error('auth', 'profile_read_error', sanitizeAuthLog({
         userId: req.auth?.userId,
@@ -504,20 +504,48 @@ export function registerAuthRoutes(app, deps) {
   });
 
   app.put('/api/auth/me', authRequired, async (req, res) => {
-    const validation = validateDisplayName(req.body?.name);
-    if (!validation.ok) {
-      res.status(400).json({ error: validation.error });
+    const name = req.body?.name;
+    const avatar = req.body?.avatar;
+
+    const nameValidation = name ? validateDisplayName(name) : { ok: true };
+    if (!nameValidation.ok) {
+      res.status(400).json({ error: nameValidation.error });
+      return;
+    }
+
+    if (avatar && typeof avatar === 'string' && avatar.length > 500000) {
+      res.status(400).json({ error: 'La imagen de perfil es demasiado grande.' });
       return;
     }
 
     try {
+      const updates = [];
+      const params = [req.auth.userId];
+      let idx = 2;
+
+      if (nameValidation.name) {
+        updates.push(`name = $${idx++}`);
+        params.push(nameValidation.name);
+      }
+
+      if (avatar !== undefined) {
+        updates.push(`avatar = $${idx++}`);
+        params.push(typeof avatar === 'string' ? avatar : '');
+      }
+
+      if (updates.length === 0) {
+        res.status(400).json({ error: 'No hay campos para actualizar.' });
+        return;
+      }
+
+      updates.push('updated_at = NOW()');
+
       const result = await appPool.query(
         `UPDATE app_users
-         SET name = $2,
-             updated_at = NOW()
+         SET ${updates.join(', ')}
          WHERE id = $1
-         RETURNING id, email, name, role`,
-        [req.auth.userId, validation.name]
+         RETURNING id, email, name, role, avatar`,
+        params
       );
 
       const row = result.rows[0];
@@ -527,7 +555,7 @@ export function registerAuthRoutes(app, deps) {
       }
 
       logger.info('auth', 'profile_updated', sanitizeAuthLog({ userId: row.id, email: row.email }));
-      res.json({ user: normalizeUserRow(row) });
+      res.json({ user: normalizeUserRow(row), avatar: row.avatar || null });
     } catch (error) {
       logger.error('auth', 'profile_update_error', sanitizeAuthLog({
         userId: req.auth?.userId,
