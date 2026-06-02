@@ -9,7 +9,6 @@ import { getDocumentLock, isLockExpired, normalizeLock, purgeExpiredLock } from 
 import { parseDocumentPayload } from './app-helpers.js';
 import { materializePayloadAssets } from '../services/pdf-assets.js';
 import { loadDocumentState } from '../workspace-store.js';
-// import { mergePdfFiles, renderHtmlCoverPdf } from '../services/html-cover.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -277,9 +276,7 @@ export function registerDocumentRoutes(app, deps) {
         timeout: 120000
       });
 
-      // Caratula HTML desactivada temporalmente.
-      // await renderHtmlCoverPdf(normalizedPayload, workdir, coverPdfPath);
-      // const pdfBuffer = await mergePdfFiles([coverPdfPath, pdfPath]);
+
       const pdfBuffer = await fs.readFile(pdfPath);
       compiledSuccessfully = true;
       const pdfName = `${sanitizeFilename(payload.documentName)}-${String(payload.documentId || '').slice(0, 8)}`;

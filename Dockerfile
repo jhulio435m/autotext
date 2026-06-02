@@ -1,7 +1,5 @@
 FROM node:22-bookworm-slim AS build
 
-ENV PUPPETEER_SKIP_DOWNLOAD=true
-
 WORKDIR /app
 
 COPY package*.json ./
@@ -13,7 +11,6 @@ RUN npm run build
 FROM node:22-bookworm-slim AS runtime
 
 ENV NODE_ENV=production
-ENV PUPPETEER_SKIP_DOWNLOAD=true
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
