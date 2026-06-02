@@ -13,6 +13,7 @@ import { canUsePlaneApi } from './infrastructure/plane-client.js';
 import { startPlaneSyncInterval } from './features/sync/sync-projects.js';
 import { createInMemoryRateLimiter } from './services/rate-limit.js';
 import { AUTH_COOKIE_NAME, createAccessToken, findActiveSession, hashJwtId } from './services/auth-security.js';
+import { runMigrations } from './db/migrate.js';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -269,6 +270,14 @@ app.use((err, _req, res, _next) => {
 });
 
 async function start() {
+  try {
+    await runMigrations(appPool);
+    console.log('db_migrations_ok');
+  } catch (error) {
+    console.error('db_migrations_failed', error);
+    process.exit(1);
+  }
+
   app.listen(config.apiPort, config.apiHost, () => {
     console.log(`API running on http://${config.apiHost}:${config.apiPort}`);
   });
