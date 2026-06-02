@@ -168,6 +168,11 @@ function Login() {
                   {loading ? <span className='h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent' /> : null}
                   {loading ? 'Ingresando...' : 'Ingresar al sistema'}
                 </button>
+
+                <p className='text-center text-sm text-slate-500'>
+                  No tienes cuenta?{' '}
+                  <Link to='/registro' className='font-medium text-sky-700 hover:text-sky-900'>Registrate</Link>
+                </p>
               </>
             )}
           </form>

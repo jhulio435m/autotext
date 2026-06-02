@@ -111,6 +111,75 @@ export function registerAuthRoutes(app, deps) {
     checkDbConnection = checkAppDbConnection
   } = deps;
 
+  app.post('/api/auth/register', async (req, res) => {
+    const email = normalizeEmail(req.body?.email);
+    const password = String(req.body?.password || '');
+    const name = cleanDisplayName(req.body?.name || '');
+    const ip = getClientIp(req);
+    const userAgent = String(req.headers['user-agent'] || '').slice(0, 500);
+    const logContext = { email, ip };
+
+    if (!email || !password || !name) {
+      res.status(400).json({ error: 'Email, contrasena y nombre son obligatorios.' });
+      return;
+    }
+
+    if (name.length > 120) {
+      res.status(400).json({ error: 'El nombre no puede superar 120 caracteres.' });
+      return;
+    }
+
+    try {
+      await checkDbConnection();
+
+      const existing = await appPool.query(
+        `SELECT id FROM app_users WHERE LOWER(email) = $1 LIMIT 1`,
+        [email]
+      );
+      if (existing.rows[0]) {
+        res.status(409).json({ error: 'El email ya esta registrado.' });
+        return;
+      }
+
+      const policy = validatePasswordPolicy(password, { email, minLength: config.authPasswordMinLength });
+      if (!policy.ok) {
+        res.status(400).json({ error: 'La contrasena no cumple la politica.', errors: policy.errors });
+        return;
+      }
+
+      const passwordHash = await hashPassword(password, config.authBcryptCost);
+      const insertResult = await appPool.query(
+        `INSERT INTO app_users (email, password_hash, name, role, updated_at)
+         VALUES ($1, $2, $3, $4, NOW())
+         RETURNING id, email, name, role`,
+        [email, passwordHash, name, 'Usuario']
+      );
+
+      const row = insertResult.rows[0];
+      const session = createToken(row.id, row.email);
+      await appPool.query(
+        `INSERT INTO app_user_sessions (user_id, jti_hash, ip_address, user_agent, expires_at)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [row.id, hashJwtId(session.jti), ip, userAgent, session.expiresAt]
+      );
+      setSessionCookie(res, session.token, session.expiresAt, config);
+
+      logger.info('auth', 'register_success', sanitizeAuthLog({ userId: row.id, email, ip }));
+      res.status(201).json({
+        token: session.token,
+        tokenExpiresAt: session.expiresAt,
+        user: normalizeUserRow(row)
+      });
+    } catch (error) {
+      logger.error('auth', 'register_error', sanitizeAuthLog({ ...logContext, error: error?.message || error }));
+      if (isDbConnectivityError(error)) {
+        res.status(503).json({ error: 'La base de datos de la aplicacion no esta disponible.' });
+        return;
+      }
+      res.status(500).json({ error: 'No se pudo completar el registro.' });
+    }
+  });
+
   app.post('/api/auth/login', async (req, res) => {
     const email = normalizeEmail(req.body?.email);
     const password = String(req.body?.password || '');

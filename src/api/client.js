@@ -147,6 +147,9 @@ export function apiLogin(payload) {
   return request('/auth/login', { method: 'POST', body: payload, auth: false });
 }
 
+export function apiRegister(payload) {
+  return request('/auth/register', { method: 'POST', body: payload, auth: false });
+}
 
 export function apiForgotPassword(payload) {
   return request('/auth/forgot-password', { method: 'POST', body: payload, auth: false });
@@ -178,6 +181,10 @@ export function apiUpdateCurrentUser(payload) {
 
 export function apiChangePassword(payload) {
   return request('/auth/change-password', { method: 'POST', body: payload });
+}
+
+export function apiAdminListUsers() {
+  return request('/admin/users');
 }
 
 export function apiGetWorkspace() {

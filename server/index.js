@@ -142,15 +142,31 @@ async function authRequired(req, res, next) {
       [hashJwtId(payload.jti)]
     );
 
+    const userResult = await appPool.query(
+      'SELECT role FROM app_users WHERE id = $1 LIMIT 1',
+      [Number(payload.sub)]
+    );
+
     req.auth = {
       userId: Number(payload.sub),
       email: payload.email,
-      jti: payload.jti
+      jti: payload.jti,
+      role: userResult.rows[0]?.role || 'Usuario'
     };
     next();
   } catch {
     res.status(401).json({ error: 'Token invalido o expirado.' });
   }
+}
+
+function requireAdmin(req, res, next) {
+  authRequired(req, res, () => {
+    if (req.auth?.role !== 'Senior') {
+      res.status(403).json({ error: 'Acceso no autorizado. Se requiere rol de administrador.' });
+      return;
+    }
+    next();
+  });
 }
 
 function authOptionalInDev(req, res, next) {
@@ -184,7 +200,8 @@ const aiRateLimit = createInMemoryRateLimiter({
 });
 
 app.use('/api/auth/login', authIpRateLimit, authRateLimit);
-registerAppRoutes(app, { appPool, config, authRequired, authOptionalInDev, createToken, normalizeUserRow });
+app.use('/api/auth/register', authIpRateLimit, authRateLimit);
+registerAppRoutes(app, { appPool, config, authRequired, authOptionalInDev, requireAdmin, createToken, normalizeUserRow });
 registerIntegrationRoutes(app, { appPool, config, authRequired, authOptionalInDev });
 registerPlaneRoutes(app, { config });
 registerAiRoutes(app, { config, authRequired, authOptionalInDev, aiRateLimit }); // IA — siempre activo
