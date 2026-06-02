@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import Header from '../components/Header';
 import Toast from '../components/ui/Toast';
 import useDocumentStore from '../store';
 import { STORAGE_KEYS } from '../constants/storage';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import {
   apiApplyIntegrationProfile,
   apiGetIntegrationProfiles,
@@ -151,6 +152,55 @@ function Layout() {
   });
   const currentDocument = getCurrentDocument();
   const sessionToken = getSessionToken();
+
+  const [showShortcuts, setShowShortcuts] = useState(false);
+
+  const keyboardHandlers = useMemo(() => [
+    {
+      key: 's',
+      ctrl: true,
+      handler: () => {
+        const state = useDocumentStore.getState();
+        if (state.saveStatus === 'unsaved' || state.saveStatus === 'retrying') {
+          queueWorkspaceSave();
+        }
+      }
+    },
+    {
+      key: 'z',
+      ctrl: true,
+      handler: () => {
+        const state = useDocumentStore.getState();
+        state.undo?.();
+      }
+    },
+    {
+      key: 'z',
+      ctrl: true,
+      shift: true,
+      handler: () => {
+        const state = useDocumentStore.getState();
+        state.redo?.();
+      }
+    },
+    {
+      key: 'y',
+      ctrl: true,
+      handler: () => {
+        const state = useDocumentStore.getState();
+        state.redo?.();
+      }
+    },
+    {
+      key: '?',
+      handler: () => setShowShortcuts((v) => !v)
+    },
+    {
+      key: 'Escape',
+      handler: () => setShowShortcuts(false)
+    }
+  ], []);
+  useKeyboardShortcuts(keyboardHandlers);
 
   const queueWorkspaceSave = async () => {
     if (saveInFlightRef.current) {
@@ -432,6 +482,21 @@ function Layout() {
           <Toast key={toast.id} toast={toast} onClose={removeToast} />
         ))}
       </div>
+
+      {showShortcuts ? (
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/30' onClick={() => setShowShortcuts(false)}>
+          <div className='mx-4 w-full max-w-sm rounded-xl border border-slate-200 bg-white p-5 shadow-xl' onClick={(e) => e.stopPropagation()}>
+            <h2 className='text-base font-semibold text-slate-900'>Atajos de teclado</h2>
+            <div className='mt-4 space-y-2 text-sm'>
+              <div className='flex justify-between'><span className='text-slate-600'>Guardar</span><kbd className='rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-500'>Ctrl+S</kbd></div>
+              <div className='flex justify-between'><span className='text-slate-600'>Deshacer</span><kbd className='rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-500'>Ctrl+Z</kbd></div>
+              <div className='flex justify-between'><span className='text-slate-600'>Rehacer</span><kbd className='rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-500'>Ctrl+Shift+Z</kbd></div>
+              <div className='flex justify-between'><span className='text-slate-600'>Atajos</span><kbd className='rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-500'>?</kbd></div>
+            </div>
+            <p className='mt-4 text-xs text-slate-400'>Los atajos funcionan en toda la aplicacion.</p>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
