@@ -1,9 +1,9 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import bcrypt from 'bcryptjs';
 import { config } from '../config.js';
 import { appPool } from '../db.js';
 import { seedSystemTemplates } from '../templates.js';
+import { hashPassword, normalizeEmail, validatePasswordPolicy } from '../services/auth-security.js';
 
 async function run() {
   const schemaPath = path.join(process.cwd(), 'server', 'db', 'schema.sql');
@@ -16,7 +16,17 @@ async function run() {
   console.log('Plantillas del sistema listas.');
 
   if (config.seedAdminEmail && config.seedAdminPassword) {
-    const passwordHash = await bcrypt.hash(config.seedAdminPassword, 10);
+    const email = normalizeEmail(config.seedAdminEmail);
+    const validation = validatePasswordPolicy(config.seedAdminPassword, {
+      email,
+      minLength: config.authPasswordMinLength
+    });
+
+    if (!validation.ok) {
+      throw new Error(`SEED_ADMIN_PASSWORD insegura: ${validation.errors.join(' ')}`);
+    }
+
+    const passwordHash = await hashPassword(config.seedAdminPassword, config.authBcryptCost);
 
     await appPool.query(
       `INSERT INTO app_users (email, password_hash, name, role, updated_at)
@@ -27,7 +37,7 @@ async function run() {
          name = EXCLUDED.name,
          role = EXCLUDED.role,
          updated_at = NOW()`,
-      [config.seedAdminEmail.toLowerCase(), passwordHash, config.seedAdminName, config.seedAdminRole]
+      [email, passwordHash, config.seedAdminName, config.seedAdminRole]
     );
 
     console.log(`Usuario seed listo: ${config.seedAdminEmail}`);

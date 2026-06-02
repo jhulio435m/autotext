@@ -158,7 +158,7 @@ function Preview({ embedded = false, editableText = false, scrollContainerId = '
 
       <div
         id={scrollContainerId || undefined}
-        className={`panel-scroll flex-1 overflow-x-hidden rounded-lg border border-slate-200 bg-slate-100 shadow-[0_1px_2px_rgba(15,23,42,0.04)] ${embedded ? 'p-2' : 'p-6'}`}
+        className={`panel-scroll flex-1 overflow-x-hidden rounded-lg border border-slate-200 bg-slate-100 shadow-[0_1px_2px_rgba(15,23,42,0.04)] ${embedded ? 'p-2' : 'p-4'}`}
       >
         {/* Outer: constrains width to scaled size, centers the page, no height clip */}
         <div

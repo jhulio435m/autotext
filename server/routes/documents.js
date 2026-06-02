@@ -13,6 +13,17 @@ import { loadDocumentState } from '../workspace-store.js';
 
 const execFileAsync = promisify(execFile);
 
+function sanitizeFilename(name, maxLen = 50) {
+  const safe = String(name || 'documento')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Za-z0-9._-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^[-.]+|[-.]+$/g, '')
+    .trim();
+  return safe.length > maxLen ? safe.slice(0, maxLen) : safe;
+}
+
 function extractLatexErrorMessage(output) {
   const raw = String(output || '');
   const latexError = raw.match(/! LaTeX Error:\s+([^\n]+)/);
@@ -22,6 +33,14 @@ function extractLatexErrorMessage(output) {
   if (emergency?.[1]) return emergency[1].trim();
 
   return '';
+}
+
+async function loadOwnedDocument(appPool, userId, projectId, documentId) {
+  const result = await appPool.query(
+    'SELECT id FROM app_documents WHERE id = $1 AND project_id = $2 AND user_id = $3 LIMIT 1',
+    [documentId, projectId, userId]
+  );
+  return result.rows[0] || null;
 }
 
 export function registerDocumentRoutes(app, deps) {
@@ -64,6 +83,12 @@ export function registerDocumentRoutes(app, deps) {
     const documentId = String(req.params.documentId || '').trim();
 
     try {
+      const document = await loadOwnedDocument(appPool, req.auth.userId, projectId, documentId);
+      if (!document) {
+        res.status(404).json({ error: 'Documento no encontrado.' });
+        return;
+      }
+
       await purgeExpiredLock(appPool, documentId);
       const lock = await getDocumentLock(appPool, documentId);
       res.json({ ok: true, lock: normalizeLock(lock, req.auth.userId) });
@@ -79,15 +104,14 @@ export function registerDocumentRoutes(app, deps) {
     const token = String(req.body?.token || randomUUID());
 
     try {
-      // Validar existencia del documento (3NF) para evitar error de FK (500)
-      const docRes = await appPool.query('SELECT 1 FROM app_documents WHERE id = $1', [documentId]);
-      if (docRes.rowCount === 0) {
+      const document = await loadOwnedDocument(appPool, req.auth.userId, projectId, documentId);
+      if (!document) {
         // Retornamos 200 pero con ok: false para evitar que el navegador lo marque como error (rojo) en la consola
         // ya que esto es común para documentos nuevos que aún no han sido autosavdeados.
         res.json({
           ok: false,
           notInDb: true,
-          error: 'Documento no persistido aún.'
+          error: 'Documento no persistido aún o no pertenece al usuario.'
         });
         return;
       }
@@ -131,6 +155,12 @@ export function registerDocumentRoutes(app, deps) {
     const token = String(req.body?.token || '').trim();
 
     try {
+      const document = await loadOwnedDocument(appPool, req.auth.userId, projectId, documentId);
+      if (!document) {
+        res.status(404).json({ error: 'Documento no encontrado.' });
+        return;
+      }
+
       const result = await appPool.query(
         `UPDATE app_document_locks
          SET expires_at = NOW() + INTERVAL '90 seconds', updated_at = NOW()
@@ -161,8 +191,14 @@ export function registerDocumentRoutes(app, deps) {
     const token = String(req.body?.token || req.query?.token || '').trim();
 
     try {
+      const document = await loadOwnedDocument(appPool, req.auth.userId, projectId, documentId);
+      if (!document) {
+        res.status(404).json({ error: 'Documento no encontrado.' });
+        return;
+      }
+
       await appPool.query(
-        'DELETE FROM app_document_locks WHERE document_id = $1 AND user_id = $2 AND ($3 = \'\' OR token = $3)',
+        "DELETE FROM app_document_locks WHERE document_id = $1 AND user_id = $2 AND ($3 = '' OR token = $3)",
         [documentId, req.auth.userId, token]
       );
       res.json({ ok: true });
@@ -195,8 +231,9 @@ export function registerDocumentRoutes(app, deps) {
       });
 
       const zipBuffer = await fs.readFile(zipPath);
+      const texName = `${sanitizeFilename(payload.documentName)}-${String(payload.documentId || '').slice(0, 8)}`;
       res.setHeader('Content-Type', 'application/zip');
-      res.setHeader('Content-Disposition', `attachment; filename="${payload.documentId || 'documento'}.zip"`);
+      res.setHeader('Content-Disposition', `attachment; filename="${texName}.zip"`);
       res.send(zipBuffer);
     } catch (error) {
       console.error('document_export_tex_error', error);
@@ -223,13 +260,21 @@ export function registerDocumentRoutes(app, deps) {
       const normalizedPayload = await materializePayloadAssets(config, payload, workdir);
       const tex = generateDocumentLatex(normalizedPayload);
       await fs.writeFile(texPath, tex, 'utf8');
+
+      // Verify xelatex is available
+      try {
+        await execFileAsync('which', ['xelatex'], { timeout: 5000 });
+      } catch {
+        throw Object.assign(new Error('xelatex no está instalado en el servidor.'), { code: 'ENOENT' });
+      }
+
       await execFileAsync('xelatex', ['-interaction=nonstopmode', '-halt-on-error', 'document.tex'], {
         cwd: workdir,
-        timeout: 60000
+        timeout: 120000
       });
       await execFileAsync('xelatex', ['-interaction=nonstopmode', '-halt-on-error', 'document.tex'], {
         cwd: workdir,
-        timeout: 60000
+        timeout: 120000
       });
 
       // Caratula HTML desactivada temporalmente.
@@ -237,8 +282,9 @@ export function registerDocumentRoutes(app, deps) {
       // const pdfBuffer = await mergePdfFiles([coverPdfPath, pdfPath]);
       const pdfBuffer = await fs.readFile(pdfPath);
       compiledSuccessfully = true;
+      const pdfName = `${sanitizeFilename(payload.documentName)}-${String(payload.documentId || '').slice(0, 8)}`;
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="${payload.documentId || 'documento'}.pdf"`);
+      res.setHeader('Content-Disposition', `attachment; filename="${pdfName}.pdf"`);
       res.send(pdfBuffer);
     } catch (error) {
       const logPath = path.join(workdir, 'document.log');
@@ -247,6 +293,10 @@ export function registerDocumentRoutes(app, deps) {
         latexLog = await fs.readFile(logPath, 'utf8');
       } catch {}
       const latexDetail = extractLatexErrorMessage(error?.stdout || error?.stderr);
+      let logTail = '';
+      try {
+        logTail = latexLog ? latexLog.slice(-4000) : '';
+      } catch {}
       console.error('document_export_pdf_error', {
         code: error?.code,
         message: error?.message,
@@ -254,17 +304,32 @@ export function registerDocumentRoutes(app, deps) {
         texPath,
         logPath,
         latexDetail,
-        stdout: error?.stdout,
-        stderr: error?.stderr,
-        logTail: latexLog ? latexLog.slice(-4000) : ''
+        stdout: typeof error?.stdout === 'string' ? error.stdout.slice(-2000) : '',
+        stderr: typeof error?.stderr === 'string' ? error.stderr.slice(-2000) : '',
+        logTail
       });
+
       if (error?.code === 'ENOENT') {
-        res.status(503).json({ error: 'xelatex no está disponible en el servidor.' });
+        res.status(503).json({ error: 'xelatex no está instalado en el servidor. Verifica la instalación de TeX Live.' });
+        return;
+      }
+
+      if (error?.code === 'ETIMEDOUT' || String(error?.message || '').includes('timed out')) {
+        res.status(504).json({ error: 'La compilación del PDF excedió el tiempo máximo. El documento puede ser demasiado extenso.' });
+        return;
+      }
+
+      if (latexDetail) {
+        res.status(500).json({
+          error: `Error de compilación LaTeX: ${latexDetail}`,
+          detail: 'Revisa que el documento no contenga caracteres especiales no soportados.'
+        });
         return;
       }
 
       res.status(500).json({
-        error: latexDetail ? `No se pudo compilar el PDF: ${latexDetail}` : 'No se pudo compilar el PDF.'
+        error: 'No se pudo compilar el PDF.',
+        detail: error?.message || 'Error desconocido durante la generación.'
       });
     } finally {
       if (process.env.KEEP_FAILED_PDF_EXPORTS === '1') {

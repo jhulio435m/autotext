@@ -37,11 +37,13 @@ function TreePanel({ collapsed = false, onToggleCollapsed }) {
   };
 
   return (
-    <aside className='relative flex min-h-[calc(100vh-230px)] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-opacity duration-300'>
+    <aside className='relative flex min-h-0 flex-col overflow-hidden rounded-lg border border-slate-200 bg-white transition-opacity duration-300'>
       <button
         type='button'
         aria-label='Expandir panel estructura'
-        className={`absolute inset-0 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-800 transition-opacity ${collapsed ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+        className={`absolute inset-0 z-10 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-opacity ${
+          collapsed ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
         title='Expandir panel'
         onClick={() => onToggleCollapsed?.(false)}
       >
@@ -51,7 +53,7 @@ function TreePanel({ collapsed = false, onToggleCollapsed }) {
       <div className={`flex h-full flex-col transition-all ${collapsed ? 'pointer-events-none scale-[0.985] opacity-0' : 'scale-100 opacity-100'}`}>
         <TreePanelHeader query={query} setQuery={setQuery} onToggleCollapsed={onToggleCollapsed} onAddSection={addRootSection} />
 
-        <div className='flex-1 overflow-auto bg-white p-3'>
+        <div className='flex-1 overflow-auto p-2'>
           {filteredStructure.length ? (
             filteredStructure.map((node, index, arr) => (
               <TreePanelNode
@@ -79,7 +81,7 @@ function TreePanel({ collapsed = false, onToggleCollapsed }) {
               />
             ))
           ) : (
-            <p className='px-1 py-2 text-sm text-slate-500'>Sin resultados para la búsqueda.</p>
+            <p className='px-1 py-2 text-xs text-slate-500'>Sin resultados para la búsqueda.</p>
           )}
         </div>
       </div>

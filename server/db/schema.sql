@@ -4,9 +4,43 @@ CREATE TABLE IF NOT EXISTS app_users (
   password_hash TEXT NOT NULL,
   name TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'Usuario',
+  failed_login_count INT NOT NULL DEFAULT 0,
+  locked_until TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE app_users ADD COLUMN IF NOT EXISTS failed_login_count INT NOT NULL DEFAULT 0;
+ALTER TABLE app_users ADD COLUMN IF NOT EXISTS locked_until TIMESTAMPTZ;
+
+CREATE TABLE IF NOT EXISTS app_user_sessions (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+  jti_hash TEXT NOT NULL UNIQUE,
+  ip_address TEXT DEFAULT '',
+  user_agent TEXT DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  expires_at TIMESTAMPTZ NOT NULL,
+  revoked_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS app_user_sessions_user_idx ON app_user_sessions (user_id, expires_at DESC);
+CREATE INDEX IF NOT EXISTS app_user_sessions_active_idx ON app_user_sessions (jti_hash)
+  WHERE revoked_at IS NULL;
+
+CREATE TABLE IF NOT EXISTS app_password_reset_tokens (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+  token_hash TEXT NOT NULL UNIQUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  expires_at TIMESTAMPTZ NOT NULL,
+  used_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS app_password_reset_tokens_user_idx ON app_password_reset_tokens (user_id, expires_at DESC);
+CREATE INDEX IF NOT EXISTS app_password_reset_tokens_active_idx ON app_password_reset_tokens (token_hash)
+  WHERE used_at IS NULL;
 
 CREATE TABLE IF NOT EXISTS app_projects (
   id TEXT PRIMARY KEY,
@@ -45,9 +79,12 @@ CREATE TABLE IF NOT EXISTS app_documents (
   structure JSONB NOT NULL DEFAULT '[]'::jsonb,
   form_data JSONB NOT NULL DEFAULT '{}'::jsonb,
   cover_data JSONB NOT NULL DEFAULT '{}'::jsonb,
+  version_history JSONB NOT NULL DEFAULT '[]'::jsonb,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE app_documents ADD COLUMN IF NOT EXISTS version_history JSONB NOT NULL DEFAULT '[]'::jsonb;
 
 CREATE INDEX IF NOT EXISTS app_documents_project_idx ON app_documents (project_id, updated_at DESC);
 CREATE INDEX IF NOT EXISTS app_documents_user_idx ON app_documents (user_id);
@@ -135,4 +172,3 @@ CREATE TABLE IF NOT EXISTS app_block_table_cells (
 );
 
 CREATE INDEX IF NOT EXISTS app_block_table_cells_row_idx ON app_block_table_cells (row_id);
-

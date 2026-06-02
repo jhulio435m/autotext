@@ -89,5 +89,20 @@ export async function queryAppDb(text, params = []) {
   }
 }
 
-export async function checkPlaneDbConnection() { try { await queryPlaneDb('SELECT 1'); } catch(e) { console.warn('[DB_CHECK] Plane DB not reachable'); } }
-export async function checkAppDbConnection() { try { await queryAppDb('SELECT 1'); } catch(e) { console.error('[DB_CHECK] App DB not reachable'); } }
+export async function checkPlaneDbConnection() {
+  try {
+    return await queryPlaneDb('SELECT 1');
+  } catch (error) {
+    console.warn('[DB_CHECK] Plane DB not reachable', error?.message || error);
+    throw error;
+  }
+}
+
+export async function checkAppDbConnection() {
+  try {
+    return await queryAppDb('SELECT 1');
+  } catch (error) {
+    console.error('[DB_CHECK] App DB not reachable', error?.message || error);
+    throw error;
+  }
+}

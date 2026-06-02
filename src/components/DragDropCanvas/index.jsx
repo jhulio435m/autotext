@@ -106,7 +106,7 @@ function DragDropCanvas() {
   };
 
   return (
-    <section className='flex min-h-[calc(100vh-230px)] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]'>
+    <section className='flex min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]'>
       <CanvasToolbar
         rowsCount={rows.length}
         selectedNode={selectedNode}
@@ -123,7 +123,7 @@ function DragDropCanvas() {
 
       <div className={`flex-1 overflow-auto bg-slate-50/70 p-3 ${compact ? 'text-xs' : 'text-sm'}`}>
         {rows.length ? (
-          <div className='mx-auto max-w-[980px]'>
+          <div className='mx-auto w-full'>
             <DndContext
               onDragMove={(event) => {
                 if (!event.over) {

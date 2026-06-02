@@ -20,6 +20,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import useDocumentStore from '../../store';
 import { apiGenerateText } from '../../api/client';
+import { sanitizeRichTextHtml } from '../../utils/richText';
 
 /* ── Toolbar ─────────────────────────────────────────────────── */
 const MenuBar = ({ editor, aiOpen, onToggleAi }) => {
@@ -131,7 +132,7 @@ function AiPanel({ editor, onClose, savedPrompt = '', onSavePrompt }) {
       const result = await apiGenerateText(prompt.trim(), context);
       if (result?.text) {
         // Insert the AI result — replace editor content
-        editor.chain().focus().setContent(result.text).run();
+        editor.chain().focus().setContent(sanitizeRichTextHtml(result.text)).run();
         onClose();
       } else {
         setError('La IA no devolvió contenido. Intenta con otro prompt.');
@@ -231,9 +232,9 @@ export default function RichTextEditor({ value, onChange, placeholder, savedProm
         suggestion: getVariableMentionSuggestions(),
       }),
     ],
-    content: value,
+    content: sanitizeRichTextHtml(value),
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      onChange(sanitizeRichTextHtml(editor.getHTML()));
     },
     editorProps: {
       attributes: { class: 'prose prose-sm prose-slate max-w-none p-3 min-h-[80px] outline-none' },
@@ -241,8 +242,9 @@ export default function RichTextEditor({ value, onChange, placeholder, savedProm
   });
 
   useEffect(() => {
-    if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value);
+    const sanitizedValue = sanitizeRichTextHtml(value);
+    if (editor && sanitizedValue !== editor.getHTML()) {
+      editor.commands.setContent(sanitizedValue);
     }
   }, [value, editor]);
 

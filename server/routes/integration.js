@@ -6,11 +6,13 @@ import {
   getAvailableProfiles
 } from '../services/integration-profile.js';
 import { canUsePlaneApi } from '../infrastructure/plane-client.js';
+import { isDbConnectivityError } from '../services/request-utils.js';
 
 export function registerIntegrationRoutes(app, deps) {
-  const { appPool, config } = deps;
+  const { appPool, config, authRequired, authOptionalInDev } = deps;
+  const integrationReadAccess = config.apiAuthEnabled ? authOptionalInDev : (_req, _res, next) => next();
 
-  app.get('/api/integration/status', async (_req, res) => {
+  app.get('/api/integration/status', integrationReadAccess, async (_req, res) => {
     const [planeApi] = await Promise.all([checkPlaneApiStatus(config)]);
 
     let db = {
@@ -89,7 +91,7 @@ export function registerIntegrationRoutes(app, deps) {
     });
   });
 
-  app.get('/api/integration/profiles', (_req, res) => {
+  app.get('/api/integration/profiles', integrationReadAccess, (_req, res) => {
     res.json({
       ok: true,
       activeMode: detectIntegrationMode(config),
@@ -97,7 +99,15 @@ export function registerIntegrationRoutes(app, deps) {
     });
   });
 
-  app.post('/api/integration/profile', async (req, res) => {
+  app.post('/api/integration/profile', authRequired, async (req, res) => {
+    if (!config.integrationProfileWriteEnabled) {
+      res.status(403).json({
+        ok: false,
+        error: 'La escritura de perfiles de integración está deshabilitada en este entorno.'
+      });
+      return;
+    }
+
     const profile = String(req.body?.profile || '').trim();
     if (!profile) {
       res.status(400).json({ ok: false, error: 'profile es obligatorio.' });
@@ -119,19 +129,33 @@ export function registerIntegrationRoutes(app, deps) {
 
   app.get('/api/health', async (_req, res) => {
     try {
-      if (!canUsePlaneApi(config)) {
+      const usingPlaneApi = canUsePlaneApi(config);
+
+      if (usingPlaneApi) {
+        const planeApi = await checkPlaneApiStatus(config);
+        if (!planeApi.ok) {
+          res.status(503).json({ ok: false, error: planeApi.error || planeApi.reason || 'Plane API no disponible' });
+          return;
+        }
+      } else {
         await checkPlaneDbConnection();
       }
+
+      if (config.enableAppEndpoints && !config.bridgeOnly) {
+        await checkAppDbConnection();
+      }
+
       res.json({
         ok: true,
         service: 'autotext-api',
         bridgeOnly: config.bridgeOnly,
         appEndpointsEnabled: config.enableAppEndpoints && !config.bridgeOnly,
-        dataSource: canUsePlaneApi(config) ? 'plane_api' : 'plane_db'
+        dataSource: usingPlaneApi ? 'plane_api' : 'plane_db'
       });
     } catch (error) {
       console.error('health_error', error);
-      res.status(500).json({ ok: false, error: 'Fuente de datos no disponible' });
+      const status = isDbConnectivityError(error) ? 503 : 500;
+      res.status(status).json({ ok: false, error: 'Fuente de datos no disponible' });
     }
   });
 }

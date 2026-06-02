@@ -266,9 +266,9 @@ export function useDocumentRouteState({ id, docId, mode, navigate }) {
 
   const editorLayoutStyle = useMemo(
     () => ({
-      '--editor-left': leftCollapsed ? '44px' : 'minmax(240px, 20fr)',
-      '--editor-center': 'minmax(0, 40fr)',
-      '--editor-right': rightCollapsed ? '44px' : 'minmax(320px, 40fr)'
+      '--editor-left': leftCollapsed ? '44px' : 'minmax(240px, 16fr)',
+      '--editor-center': 'minmax(0, 48fr)',
+      '--editor-right': rightCollapsed ? '44px' : 'minmax(320px, 36fr)'
     }),
     [leftCollapsed, rightCollapsed]
   );

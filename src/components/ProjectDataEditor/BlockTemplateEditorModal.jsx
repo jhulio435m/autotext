@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import Modal from '../ui/Modal';
 import { NodeTypeProperties } from '../PropertyPanel/NodeTypeProperties';
-import TableEditor from '../TableEditor';
 import ImageUploader from '../ImageUploader';
 import MathEditor from '../MathEditor';
 import AutoTextarea from '../ui/AutoTextarea';
-import RichTextEditor from '../ui/RichTextEditor';
+import LazyRichTextEditor from '../ui/LazyRichTextEditor';
+import LazyTableEditor from '../ui/LazyTableEditor';
 import { deepClone } from '../../utils/document';
 
 export default function BlockTemplateEditorModal({ open, onClose, blockKey, initialBlock, onSave }) {
@@ -35,7 +35,7 @@ export default function BlockTemplateEditorModal({ open, onClose, blockKey, init
              Contenido del Bloque ({blockType})
            </h3>
            <div className='bg-white p-4 rounded-lg border border-slate-200 shadow-sm'>
-             {blockType === 'table' && <TableEditor block={nodeProps} value={formData} onChange={handleUpdateData} onUpdateProps={handleUpdateProps} />}
+             {blockType === 'table' && <LazyTableEditor block={nodeProps} value={formData} onChange={handleUpdateData} onUpdateProps={handleUpdateProps} />}
              {blockType === 'image' && <ImageUploader block={nodeProps} value={formData} onChange={handleUpdateData} />}
              {blockType === 'latex_graph' && (
                <MathEditor 
@@ -55,7 +55,7 @@ export default function BlockTemplateEditorModal({ open, onClose, blockKey, init
                />
              )}
              {blockType === 'rich_text' && (
-               <RichTextEditor 
+               <LazyRichTextEditor 
                  value={typeof formData === 'string' ? formData : ''} 
                  onChange={handleUpdateData} 
                />

@@ -1,14 +1,28 @@
 import { appPool, queryPlaneDb } from '../db.js';
+import { quoteIdentifier } from '../services/request-utils.js';
 
-export async function getProjectsFromPlaneDb(schema, limit = 500) {
-  const safeSchema = String(schema || 'public');
-  const result = await queryPlaneDb(`
-    SELECT id, name, description, identifier, 
-           cover_image, cover_image_asset_id,
-           updated_at
-    FROM ${safeSchema}.projects
-    LIMIT $1
-  `, [limit]);
+export async function getProjectsFromPlaneDb(schema, limit = 500, workspaceSlug = '') {
+  const safeSchema = quoteIdentifier(String(schema || 'public'));
+  const params = [];
+  const filters = [];
+  let query = `
+    SELECT p.id, p.name, p.description, p.identifier, 
+           p.cover_image, p.cover_image_asset_id,
+           p.updated_at
+    FROM ${safeSchema}.projects p
+  `;
+  if (workspaceSlug) {
+    query += ` JOIN ${safeSchema}.workspaces w ON w.id = p.workspace_id`;
+    params.push(workspaceSlug);
+    filters.push(`w.slug = $${params.length}`);
+  }
+  filters.push(`p.deleted_at IS NULL`);
+  if (filters.length > 0) {
+    query += ` WHERE ${filters.join(' AND ')}`;
+  }
+  params.push(limit);
+  query += ` LIMIT $${params.length}`;
+  const result = await queryPlaneDb(query, params);
   return result.rows || [];
 }
 
@@ -18,6 +32,15 @@ export async function getLocalProjectById(id) {
     [id]
   );
   return result.rows[0] || null;
+}
+
+export async function deleteLocalProjectsNotIn(ids) {
+  if (!ids || ids.length === 0) return;
+  const placeholders = ids.map((_, i) => `$${i + 1}`).join(',');
+  await appPool.query(
+    `DELETE FROM app_projects WHERE id NOT IN (${placeholders})`,
+    ids
+  );
 }
 
 export async function upsertLocalProject(projectData) {

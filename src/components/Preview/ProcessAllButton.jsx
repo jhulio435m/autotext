@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
 import useDocumentStore from '../../store';
 import { apiGenerateText } from '../../api/client';
+import { sanitizeRichTextHtml, wrapPlainTextAsRichText } from '../../utils/richText';
 
 /**
  * Collects all blocks in the document that have a promptIA or promptTemplate,
@@ -58,7 +59,7 @@ export function useProcessAllPrompts() {
       try {
         const result = await apiGenerateText(block.prompt, context);
         if (result?.text) {
-          updateFormData(block.id, result.text);
+          updateFormData(block.id, sanitizeRichTextHtml(result.text) || wrapPlainTextAsRichText(result.text));
         }
       } catch (err) {
         errors.push({ id: block.id, label: block.label, error: err.message });

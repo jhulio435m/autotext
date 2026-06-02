@@ -4,7 +4,8 @@ import { fetchAssetAsBase64 } from '../../infrastructure/plane-client.js';
 import {
   getProjectsFromPlaneDb,
   getLocalProjectById,
-  upsertLocalProject
+  upsertLocalProject,
+  deleteLocalProjectsNotIn
 } from '../../infrastructure/project-repository.js';
 import { listPlaneProjectsFlatFromApi } from '../../infrastructure/plane-api-provider.js';
 import { resolveProjectCoverUrl } from '../../core/plane-mapper.js';
@@ -16,7 +17,8 @@ async function fetchProjectsFromActiveProvider() {
   }
   console.log('[SYNC_FEATURE] Using Plane DB provider...');
   const schema = config.planeProjectSchema || 'public';
-  return getProjectsFromPlaneDb(schema);
+  const workspaceSlug = config.planeWorkspaceSlug || '';
+  return getProjectsFromPlaneDb(schema, 500, workspaceSlug);
 }
 
 export async function syncProjectsFromPlane() {
@@ -58,6 +60,9 @@ export async function syncProjectsFromPlane() {
       }
     }
 
+    const syncedIds = planeProjects.map((p) => String(p.id));
+    await deleteLocalProjectsNotIn(syncedIds);
+    console.log(`[SYNC_FEATURE] Cleaned up stale projects. ${syncedIds.length} active projects remain.`);
     console.log(`[SYNC_FEATURE] Completed in ${Date.now() - start}ms`);
   } catch (error) {
     console.warn('[SYNC_FEATURE_FAILED] Synchronization skipped:', error.message);

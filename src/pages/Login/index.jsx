@@ -1,18 +1,19 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import useDocumentStore from '../../store';
 import { apiLogin } from '../../api/client';
 import { setSessionToken } from '../../api/session';
 
 function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const currentUser = useDocumentStore((state) => state.currentUser);
   const setCurrentUser = useDocumentStore((state) => state.setCurrentUser);
   const hydrateWorkspace = useDocumentStore((state) => state.hydrateWorkspace);
   const setWorkspaceHydrated = useDocumentStore((state) => state.setWorkspaceHydrated);
 
-  const [email, setEmail] = useState('jhulio@autotext.com');
-  const [password, setPassword] = useState('12345');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -22,9 +23,9 @@ function Login() {
 
   useEffect(() => {
     if (currentUser) {
-      navigate('/dashboard');
+      navigate(location.state?.from?.pathname || '/dashboard', { replace: true });
     }
-  }, [currentUser, navigate]);
+  }, [currentUser, location.state, navigate]);
 
   useEffect(() => {
     if (!isDevBypass || currentUser) return;
@@ -66,9 +67,10 @@ function Login() {
         setCurrentUser({ ...(response?.user || {}), remember });
       }
 
-      navigate('/dashboard');
+      navigate(location.state?.from?.pathname || '/dashboard', { replace: true });
     } catch (loginError) {
-      setError(loginError?.message || 'No se pudo iniciar sesion. Verifica API y base de datos.');
+      const message = loginError?.message || 'No se pudo iniciar sesion. Verifica API y base de datos.';
+      setError(message.includes('Failed to fetch') ? 'No se pudo conectar con la API. Verifica que el servidor este activo.' : message);
     } finally {
       setLoading(false);
     }
@@ -101,6 +103,7 @@ function Login() {
             {isDevBypass ? 'La autenticación API está desactivada. Entrarás directamente al dashboard.' : 'Accede con tus credenciales corporativas.'}
           </p>
 
+          {location.state?.message ? <div className='mt-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700'>{location.state.message}</div> : null}
           {error ? <div className='mt-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700'>{error}</div> : null}
 
           <form
@@ -119,6 +122,7 @@ function Login() {
                 <div>
                   <label className='mb-1 block text-xs font-semibold text-slate-600'>Email</label>
                   <input
+                    ref={(node) => node?.focus()}
                     type='email'
                     value={email}
                     disabled={loading}
@@ -148,10 +152,13 @@ function Login() {
                   </div>
                 </div>
 
-                <label className='flex items-center gap-2 text-sm text-slate-600'>
-                  <input type='checkbox' checked={remember} onChange={() => setRemember((prev) => !prev)} disabled={loading} />
-                  Recordarme
-                </label>
+                <div className='flex items-center justify-between gap-3'>
+                  <label className='flex items-center gap-2 text-sm text-slate-600'>
+                    <input type='checkbox' checked={remember} onChange={() => setRemember((prev) => !prev)} disabled={loading} />
+                    Recordarme
+                  </label>
+                  <Link to='/recuperar-contrasena' className='text-sm font-medium text-sky-700 hover:text-sky-900'>Olvide mi contrasena</Link>
+                </div>
 
                 <button
                   type='submit'

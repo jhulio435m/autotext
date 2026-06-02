@@ -201,6 +201,7 @@ export function createDocumentActions(set, get) {
         structure: snapshot.structure,
         formData: snapshot.formData,
         coverData: snapshot.coverData,
+        versionHistory: createSnapshotEntry(doc, 'Antes de restaurar'),
         updatedAt: nowISO()
       });
 

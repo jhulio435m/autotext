@@ -128,7 +128,7 @@ export function createProjectRecord({ name, description, code, accentColor }) {
 }
 
 export function createSnapshotEntry(doc, label) {
-  return [createVersionSnapshot(doc, label), ...(doc.versionHistory || [])].slice(0, 3);
+  return [createVersionSnapshot(doc, label), ...(doc.versionHistory || [])].slice(0, 20);
 }
 
 export function normalizeUpdatedDocument(doc, patch = {}) {

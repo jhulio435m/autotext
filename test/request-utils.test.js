@@ -4,6 +4,7 @@ import {
   clampLimit,
   isDbConnectivityError,
   isSafeIdentifier,
+  isTimeoutError,
   isUuid,
   parseBooleanQuery,
   quoteIdentifier
@@ -35,4 +36,12 @@ test('uuid and db connectivity helpers classify values correctly', () => {
   assert.equal(isUuid('not-a-uuid'), false);
   assert.equal(isDbConnectivityError({ code: 'ECONNREFUSED' }), true);
   assert.equal(isDbConnectivityError({ code: '23505' }), false);
+});
+
+
+test('timeout helper classifies abort-like failures', () => {
+  assert.equal(isTimeoutError({ code: 'ETIMEDOUT' }), true);
+  assert.equal(isTimeoutError({ name: 'AbortError' }), true);
+  assert.equal(isTimeoutError({ message: 'Request timed out after 10s' }), true);
+  assert.equal(isTimeoutError({ code: 'ECONNREFUSED' }), false);
 });

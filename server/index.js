@@ -11,10 +11,17 @@ import { registerIntegrationRoutes } from './routes/integration.js';
 import { registerAiRoutes } from './routes/ai.js';
 import { canUsePlaneApi } from './infrastructure/plane-client.js';
 import { startPlaneSyncInterval } from './features/sync/sync-projects.js';
+import { createInMemoryRateLimiter } from './services/rate-limit.js';
+import { AUTH_COOKIE_NAME, createAccessToken, findActiveSession, hashJwtId } from './services/auth-security.js';
 import fs from 'node:fs';
 import path from 'node:path';
 
 const app = express();
+app.disable('x-powered-by');
+
+if (config.jwtSecret === 'change-me-before-production') {
+  throw new Error('JWT_SECRET inseguro o no configurado. Define un secreto real antes de iniciar la API.');
+}
 
 const crashLog = path.join(process.cwd(), 'crash.log');
 process.on('uncaughtException', (err) => {
@@ -32,8 +39,17 @@ process.on('unhandledRejection', (reason) => {
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow all origins in dev for now to unblock
-      callback(null, true);
+      if (!origin || config.allowAllCors) {
+        callback(null, true);
+        return;
+      }
+
+      if (config.corsOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`Origin not allowed: ${origin}`));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -41,16 +57,33 @@ app.use(
   })
 );
 
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'same-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data: blob: https:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' https://static.cloudflareinsights.com; script-src-elem 'self' https://static.cloudflareinsights.com; connect-src 'self' https:"
+  );
+  next();
+});
+
 app.use(
   compression({
     threshold: 1024
   })
 );
 
-app.use(express.json({ limit: '200mb' }));
+app.use(express.json({ limit: `${config.requestBodyLimitMb}mb` }));
 
 function createToken(userId, email) {
-  return jwt.sign({ sub: String(userId), email }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
+  return createAccessToken({
+    jwtSecret: config.jwtSecret,
+    jwtExpiresIn: config.jwtExpiresIn,
+    userId,
+    email
+  });
 }
 
 function normalizeUserRow(row) {
@@ -68,8 +101,24 @@ function parseBearerToken(headerValue) {
   return match ? match[1] : null;
 }
 
-function authRequired(req, res, next) {
-  const token = parseBearerToken(req.headers.authorization);
+function parseCookieToken(headerValue) {
+  if (!headerValue) return null;
+  const cookies = String(headerValue)
+    .split(';')
+    .map((item) => item.trim())
+    .filter(Boolean);
+  for (const cookie of cookies) {
+    const separator = cookie.indexOf('=');
+    if (separator === -1) continue;
+    const name = cookie.slice(0, separator);
+    if (name !== AUTH_COOKIE_NAME) continue;
+    return decodeURIComponent(cookie.slice(separator + 1));
+  }
+  return null;
+}
+
+async function authRequired(req, res, next) {
+  const token = parseBearerToken(req.headers.authorization) || parseCookieToken(req.headers.cookie);
   if (!token) {
     res.status(401).json({ error: 'No autorizado. Falta token.' });
     return;
@@ -77,9 +126,26 @@ function authRequired(req, res, next) {
 
   try {
     const payload = jwt.verify(token, config.jwtSecret);
+    if (!payload.jti) {
+      res.status(401).json({ error: 'Token invalido o expirado.' });
+      return;
+    }
+
+    const session = await findActiveSession(appPool, payload.jti);
+    if (!session) {
+      res.status(401).json({ error: 'Token invalido o expirado.' });
+      return;
+    }
+
+    await appPool.query(
+      'UPDATE app_user_sessions SET last_seen_at = NOW() WHERE jti_hash = $1',
+      [hashJwtId(payload.jti)]
+    );
+
     req.auth = {
       userId: Number(payload.sub),
-      email: payload.email
+      email: payload.email,
+      jti: payload.jti
     };
     next();
   } catch {
@@ -95,10 +161,33 @@ function authOptionalInDev(req, res, next) {
   authRequired(req, res, next);
 }
 
+const authRateLimit = createInMemoryRateLimiter({
+  maxRequests: config.authLoginEmailRateLimitMax,
+  windowMs: config.authLoginRateLimitWindowMs,
+  keyFn: (req) => {
+    const email = String(req.body?.email || '').trim().toLowerCase();
+    return `email:${email || 'anonymous'}`;
+  }
+});
+const authIpRateLimit = createInMemoryRateLimiter({
+  maxRequests: config.authLoginIpRateLimitMax,
+  windowMs: config.authLoginRateLimitWindowMs,
+  keyFn: (req) => {
+    const forwarded = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+    return `ip:${forwarded || req.ip || 'anonymous'}`;
+  }
+});
+const aiRateLimit = createInMemoryRateLimiter({
+  maxRequests: config.aiRateLimitMaxRequests,
+  windowMs: config.aiRateLimitWindowMs,
+  keyFn: (req) => req.auth?.userId || req.ip || req.headers['x-forwarded-for'] || 'anonymous'
+});
+
+app.use('/api/auth/login', authIpRateLimit, authRateLimit);
 registerAppRoutes(app, { appPool, config, authRequired, authOptionalInDev, createToken, normalizeUserRow });
-registerIntegrationRoutes(app, { appPool, config });
+registerIntegrationRoutes(app, { appPool, config, authRequired, authOptionalInDev });
 registerPlaneRoutes(app, { config });
-registerAiRoutes(app, { config }); // IA — siempre activo
+registerAiRoutes(app, { config, authRequired, authOptionalInDev, aiRateLimit }); // IA — siempre activo
 
 const distDir = path.join(process.cwd(), 'dist');
 const distIndex = path.join(distDir, 'index.html');
@@ -106,14 +195,28 @@ if (fs.existsSync(distIndex)) {
   app.use(
     express.static(distDir, {
       index: false,
-      maxAge: '1h'
+      etag: false,
+      lastModified: false,
+      maxAge: 0,
+      setHeaders(res) {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+      }
     })
   );
 
   app.get(/^\/(?!api(?:\/|$)).*/, (_req, res) => {
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
     res.sendFile(distIndex);
   });
 }
+
+app.use('/api', (_req, res) => {
+  res.status(404).json({ error: 'Ruta API no encontrada.' });
+});
 
 app.use((err, _req, res, _next) => {
   if (err?.message?.startsWith('Origin not allowed:')) {
@@ -139,14 +242,14 @@ async function start() {
   try {
     if (canUsePlaneApi(config)) {
       console.log('plane_api_mode_enabled');
-      startPlaneSyncInterval(); // Start background sync
     } else {
       await checkPlaneDbConnection();
       console.log('plane_db_startup_check_ok');
     }
+    startPlaneSyncInterval(); // Start background sync regardless of provider
   } catch (error) {
     // Keep API running so health endpoints can report DB availability.
-    console.error('plane_db_startup_check_failed', error);
+    console.warn('plane_sync_interval_start_warning', error.message);
   }
 }
 

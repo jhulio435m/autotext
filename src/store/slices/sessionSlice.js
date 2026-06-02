@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { clearSessionToken } from '../../api/session';
+import { clearSessionToken, revokeSessionToken } from '../../api/session';
 import { STORAGE_KEYS, hasStorage } from '../helpers';
 
 function createSessionSlice(set) {
@@ -13,6 +13,7 @@ function createSessionSlice(set) {
     },
 
     logout: () => {
+      revokeSessionToken();
       clearSessionToken();
       if (hasStorage) {
         window.localStorage.removeItem(STORAGE_KEYS.user);

@@ -30,3 +30,21 @@ export function isUuid(value) {
     String(value || '').trim()
   );
 }
+
+
+export function isTimeoutError(error) {
+  const code = String(error?.code || '').toUpperCase();
+  const name = String(error?.name || '');
+  const message = String(error?.message || '').toLowerCase();
+
+  return [
+    'ETIMEDOUT',
+    'ABORT_ERR',
+    'UND_ERR_CONNECT_TIMEOUT',
+    'UND_ERR_HEADERS_TIMEOUT',
+    'UND_ERR_BODY_TIMEOUT'
+  ].includes(code)
+    || ['AbortError', 'TimeoutError'].includes(name)
+    || message.includes('timed out')
+    || message.includes('timeout');
+}

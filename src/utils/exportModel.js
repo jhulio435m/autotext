@@ -537,6 +537,16 @@ function normalizeBlockForExport(node, formData, cover, helpers) {
     };
   }
 
+  if (node.type === 'diagram') {
+    const diagram = rawValue && typeof rawValue === 'object' ? rawValue : { code: rawValue || node.content || '', format: node.diagramFormat || 'mermaid' };
+    return {
+      ...node,
+      exportKind: 'diagram',
+      exportFallback: fallback,
+      exportValue: diagram
+    };
+  }
+
   if (node.type === 'latex_graph') {
     const expr = typeof rawValue === 'string' && rawValue.trim() ? rawValue : node.content;
     return {

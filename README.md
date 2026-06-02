@@ -4,6 +4,8 @@ Este proyecto ahora tiene:
 - Frontend Vite/React (`src/`)
 - API Node/Express (`server/index.js`)
 - Modo puente para PostgreSQL remoto por SSH
+- CI base de GitHub Actions (`.github/workflows/ci.yml`, `codeql.yml`)
+- Hardening básico del servidor: CORS por allowlist, límites de payload, rate limiting en IA y autenticación con bcrypt/JWT revocable
 ## 1) Configurar variables de entorno
 
 1. Copia `.env.example` a `.env` (frontend).
@@ -11,6 +13,21 @@ Este proyecto ahora tiene:
 3. Edita `server/.env` con estas dos familias de variables:
    - `PLANE_DB_*`: lectura de Plane en modo solo lectura.
    - `APP_DB_*`: persistencia propia de la app (`app_users`, `app_workspaces`, `app_documents`).
+   - Variables de seguridad opcionales:
+     - `ALLOW_ALL_CORS=false`
+     - `REQUEST_BODY_LIMIT_MB=25`
+     - `API_AUTH_ENABLED=true`
+     - `JWT_EXPIRES_IN=30m`
+     - `AUTH_BCRYPT_COST=12`
+     - `AUTH_PASSWORD_MIN_LENGTH=12`
+     - `AUTH_FAILED_LOGIN_MAX=5`
+     - `AUTH_LOCKOUT_MS=900000`
+     - `AUTH_SESSION_COOKIE_ENABLED=false`
+     - `AUTH_SESSION_COOKIE_SECURE=false`
+     - `INTEGRATION_PROFILE_WRITE_ENABLED=false`
+     - `AI_REQUIRE_AUTH=true`
+     - `AI_RATE_LIMIT_WINDOW_MS=60000`
+     - `AI_RATE_LIMIT_MAX_REQUESTS=12`
 4. Si quieres usar Plane API (sin leer directo de BD), define:
    - `PLANE_BASE_URL` (ej: `https://plane.urriburuleon.com`)
    - `PLANE_WORKSPACE_SLUG`
@@ -123,6 +140,8 @@ Cuando definamos endpoints, se activan en `.env`.
 ## Endpoints
 
 - `GET /api/health`
+- `POST /api/auth/login`
+- `POST /api/auth/logout`
 - `GET /api/integration/status`
 - `GET /api/bridge/health`
 - `GET /api/bridge/tables?schema=public`
@@ -138,3 +157,28 @@ Esquema recomendado para integraciones:
 Si luego quieres activar endpoints de aplicacion:
 - `BRIDGE_ONLY=false`
 - `ENABLE_APP_ENDPOINTS=true`
+
+## Seguridad de autenticacion
+
+La autenticacion usa `bcryptjs` con costo configurable y minimo efectivo `12` (`AUTH_BCRYPT_COST=12`). El seed admin de `npm run db:init` valida la politica de contrasenas antes de crear o actualizar el usuario.
+
+Politica actual:
+- Longitud minima por defecto: `12` caracteres.
+- Rechaza contrasenas iguales al email o al usuario del email.
+- Rechaza contrasenas comunes desde `server/security/common-passwords.txt` (SecLists `10k-most-common.txt`) mas una lista interna minima.
+- Migra automaticamente hashes bcrypt con costo menor al configurado cuando el login es exitoso.
+
+Proteccion anti fuerza bruta:
+- Rate limit separado por IP y por email normalizado.
+- Bloqueo temporal por usuario tras `AUTH_FAILED_LOGIN_MAX` fallos consecutivos.
+- Respuestas genericas para fallos de login, evitando enumeracion de usuarios.
+
+Sesiones:
+- El access token JWT incluye `iat`, `exp` y `jti`.
+- Cada `jti` se guarda hasheado en `app_user_sessions`; `POST /api/auth/logout` revoca la sesion.
+- El frontend mantiene bearer tokens por compatibilidad. Si el despliegue usa HTTPS estable, se puede activar cookie `HttpOnly` con `AUTH_SESSION_COOKIE_ENABLED=true` y `AUTH_SESSION_COOKIE_SECURE=true`.
+
+Endpoints de cuenta:
+- `GET /api/auth/me`: devuelve el usuario autenticado (`id`, `email`, `name`, `role`).
+- `PUT /api/auth/me`: actualiza el nombre visible del usuario autenticado.
+- `POST /api/auth/change-password`: valida la contrasena actual, aplica la politica de contrasenas a la nueva y revoca las otras sesiones activas del mismo usuario conservando la sesion actual.

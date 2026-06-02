@@ -2,8 +2,8 @@ import { useEffect, useMemo, useRef } from 'react';
 import { Workbook } from '@fortune-sheet/react';
 import '@fortune-sheet/react/dist/index.css';
 import { coordsToCell, cellToCoords } from './spreadsheetHelpers';
+import { CELL_STYLE_KEYS } from './spreadsheetConstants';
 
-export const CELL_STYLE_KEYS = ['bg', 'bl', 'it', 'ff', 'fs', 'fc', 'ht', 'vt', 'tb', 'cl', 'un', 'tr', 'lo', 'rt', 'ct', 'qp'];
 const SHEET_CONFIG_KEYS = ['columnlen', 'rowlen', 'customHeight', 'customWidth', 'borderInfo', 'rowhidden', 'colhidden'];
 const FORTUNE_MERGE_WARNING = 'Main merge info row_pre or col_pre or row or col is null';
 let restoreFortuneConsoleFilter = null;
@@ -390,8 +390,7 @@ function SpreadsheetEditor({
 
   return (
     <div
-      className='fortunesheet-wrapper overflow-hidden rounded-md border border-slate-200'
-      style={{ height: '450px' }}
+      className='fortunesheet-wrapper overflow-hidden rounded-md border border-slate-200 min-h-[300px] lg:min-h-[450px]'
       onPasteCapture={handlePasteCapture}
     >
       <Workbook 

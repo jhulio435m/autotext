@@ -33,7 +33,7 @@ export default forwardRef(function VariableMentionList(props, ref) {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-1 min-w-[200px] max-h-64 overflow-y-auto">
+    <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-1 w-full sm:min-w-[200px] max-h-64 overflow-y-auto">
       {props.items.map((item, index) => {
         let friendlyLabel = item.label || item.key;
         if (friendlyLabel === item.key && friendlyLabel.startsWith('var_')) {

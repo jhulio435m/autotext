@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
-import SpreadsheetEditor from './SpreadsheetEditor';
-import { CELL_STYLE_KEYS } from './SpreadsheetEditor';
+import { Suspense, lazy, useMemo } from 'react';
+import { CELL_STYLE_KEYS } from './spreadsheetConstants';
 import { coordsToCell, cellToCoords } from './spreadsheetHelpers';
 import { normalizeAdvancedTableValue } from '../utils/advancedTable.js';
 import { buildTableExportValue } from '../utils/exportModel.js';
 import useDocumentStore from '../store';
+
+const SpreadsheetEditor = lazy(() => import('./SpreadsheetEditor'));
 
 // Default size for new tables — small and practical
 const DEFAULT_ROWS = 4;
@@ -136,15 +137,23 @@ function TableEditor({ block, value, onChange, onUpdateProps }) {
         </button>
       </div>
 
-      <SpreadsheetEditor
-        data={sheetData}
-        mergeCells={sheetMerge}
-        sheetConfig={sheetConfig}
-        onChange={handleChange}
-        onPasteBlocked={() => pushToast('No se pudo pegar sobre la selección. Revisa las celdas combinadas.', 'warning')}
-        minRows={minRows}
-        minCols={minCols}
-      />
+      <Suspense
+        fallback={
+          <div className='rounded-xl border border-slate-200 bg-white px-4 py-10 text-center text-sm text-slate-500'>
+            Cargando editor de tabla...
+          </div>
+        }
+      >
+        <SpreadsheetEditor
+          data={sheetData}
+          mergeCells={sheetMerge}
+          sheetConfig={sheetConfig}
+          onChange={handleChange}
+          onPasteBlocked={() => pushToast('No se pudo pegar sobre la selección. Revisa las celdas combinadas.', 'warning')}
+          minRows={minRows}
+          minCols={minCols}
+        />
+      </Suspense>
     </div>
   );
 }

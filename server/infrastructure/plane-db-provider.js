@@ -15,6 +15,7 @@ export async function listPlaneProjectsFromDb(config, options = {}) {
     candidateTables,
     limit,
     workspaceId,
+    workspaceSlug,
     includeDeleted = false,
     includeArchived = false
   } = options;
@@ -72,6 +73,16 @@ export async function listPlaneProjectsFromDb(config, options = {}) {
   }
 
   const hasWorkspaceColumn = columnSet.has('workspace_id');
+  let resolvedWorkspaceId = workspaceId;
+  if (workspaceSlug && !resolvedWorkspaceId) {
+    const wsResult = await queryPlaneDb(
+      `SELECT id FROM ${quoteIdentifier(schema)}.workspaces WHERE slug = $1 LIMIT 1`,
+      [workspaceSlug]
+    );
+    if (wsResult.rows[0]) {
+      resolvedWorkspaceId = wsResult.rows[0].id;
+    }
+  }
   const selectSql = selectedColumns.map((column) => quoteIdentifier(column)).join(', ');
   const fromSql = `${quoteIdentifier(schema)}.${quoteIdentifier(table)}`;
   const orderColumn = columnSet.has('updated_at')
@@ -92,8 +103,8 @@ export async function listPlaneProjectsFromDb(config, options = {}) {
     filters.push(`${quoteIdentifier('archived_at')} IS NULL`);
   }
 
-  if (workspaceId && hasWorkspaceColumn) {
-    params.push(workspaceId);
+  if (resolvedWorkspaceId && hasWorkspaceColumn) {
+    params.push(resolvedWorkspaceId);
     filters.push(`${quoteIdentifier('workspace_id')}::text = $${params.length}`);
   }
 

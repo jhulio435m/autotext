@@ -35,7 +35,6 @@ COPY --from=build /app/dist ./dist
 COPY server ./server
 COPY src ./src
 COPY examples ./examples
-COPY .env ./.env
 
 EXPOSE 4000
 

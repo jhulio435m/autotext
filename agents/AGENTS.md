@@ -71,7 +71,10 @@ Los modos se conmutan via `POST /api/integration/profile` o scripts npm (`npm ru
    - Ejemplo: `agents/tasks/fix-bug.md` -> `agents/tasks/fix-bug.done.md`.
 6. **Commits y PRs**:
    - Realizar commits descriptivos.
-   - Si el agente tiene permisos, puede subir la rama; de lo contrario, debe indicar que los cambios están listos para ser revisados y fusionados.
+   - El agente **DEBE** subir la rama a GitHub y crear un Pull Request hacia `main` al completar cada tarea.
+   - Comando para subir: `git push origin <nombre-de-la-rama>`
+   - Crear PR vía GitHub CLI: `gh pr create --base main --head <nombre-de-la-rama> --title "<título descriptivo>" --body "<descripción de los cambios>"`
+   - Esperar a que CI pase antes de mergear.
 
 ## 📋 Reglas de Oro
 

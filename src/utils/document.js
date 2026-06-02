@@ -7,7 +7,7 @@ export function normalizeBlockType(type) {
   if (type === 'input') return 'variable';
   if (type === 'math') return 'latex_graph';
   if (type === 'advanced_table') return 'table';
-  if (type === 'rich_text' || type === 'template_text' || type === 'image') return type;
+  if (type === 'rich_text' || type === 'template_text' || type === 'image' || type === 'diagram') return type;
   return type || 'text';
 }
 
@@ -70,6 +70,11 @@ export function normalizeDocumentNodes(nodes) {
     if (nextType === 'template_text') {
       nextNode.template = node.template || node.content || '';
       nextNode.templateMode = node.templateMode || 'inline';
+    }
+
+    if (nextType === 'diagram') {
+      nextNode.diagramFormat = node.diagramFormat || 'mermaid';
+      nextNode.promptIA = node.promptIA || '';
     }
 
     if (nextType === 'latex_graph') {
@@ -182,6 +187,17 @@ export function createNode(type, level = 1) {
       float: true,
       hasCaption: true,
       hasSource: true
+    };
+  }
+
+  if (type === 'diagram') {
+    return {
+      ...base,
+      type: 'diagram',
+      label: 'Nuevo diagrama',
+      content: 'flowchart TD\n  A[Inicio] --> B[Revision]\n  B --> C[Fin]',
+      diagramFormat: 'mermaid',
+      promptIA: ''
     };
   }
 

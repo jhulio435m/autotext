@@ -114,6 +114,7 @@ function Layout() {
   const documents = useDocumentStore((state) => state.documents);
   const getCurrentDocument = useDocumentStore((state) => state.getCurrentDocument);
   const currentUser = useDocumentStore((state) => state.currentUser);
+  const [offlineMode, setOfflineMode] = useState(typeof navigator !== 'undefined' ? !navigator.onLine : false);
   const logout = useDocumentStore((state) => state.logout);
   const saveStatus = useDocumentStore((state) => state.saveStatus);
   const workspaceHydrated = useDocumentStore((state) => state.workspaceHydrated);
@@ -225,6 +226,7 @@ function Layout() {
 
   useEffect(() => {
     if (!useApiWorkspace) return undefined;
+
     if (!currentUser) {
       remoteLoadedRef.current = false;
       setWorkspaceHydrated(false);
@@ -403,18 +405,29 @@ function Layout() {
     applyProfile: applyIntegrationProfile
   };
 
+  useEffect(() => {
+    const updateOnlineState = () => setOfflineMode(!navigator.onLine);
+    window.addEventListener('online', updateOnlineState);
+    window.addEventListener('offline', updateOnlineState);
+    return () => {
+      window.removeEventListener('online', updateOnlineState);
+      window.removeEventListener('offline', updateOnlineState);
+    };
+  }, []);
+
   if (!currentUser) {
-    return <Navigate to='/' replace />;
+    return <Navigate to='/' replace state={{ from: location }} />;
   }
 
   return (
-    <div className='min-h-screen bg-slate-100'>
+    <div className='flex min-h-screen flex-col bg-slate-100'>
       <Header integration={integrationContext} />
-      <main key={location.pathname} className='mx-auto max-w-[1460px] px-4 py-4'>
+      {offlineMode ? <div className='border-b border-amber-200 bg-amber-50 px-4 py-2 text-center text-sm font-semibold text-amber-800'>Modo Offline</div> : null}
+      <main key={location.pathname} className='flex flex-1 flex-col w-full px-4 py-4'>
         <Outlet context={integrationContext} />
       </main>
 
-      <div className='pointer-events-none fixed right-4 top-20 z-40 flex w-[330px] flex-col gap-2'>
+      <div className='pointer-events-none fixed right-4 top-20 z-40 flex w-full max-w-sm sm:max-w-[330px] flex-col gap-2'>
         {toasts.map((toast) => (
           <Toast key={toast.id} toast={toast} onClose={removeToast} />
         ))}

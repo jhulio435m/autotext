@@ -3,6 +3,7 @@ const options = [
   { key: 'template_text', label: 'Texto plantilla', icon: 'Tp' },
   { key: 'table', label: 'Tabla', icon: 'Tb' },
   { key: 'image', label: 'Imagen', icon: 'Im' },
+  { key: 'diagram', label: 'Diagrama', icon: 'Dg' },
   { key: 'input', label: 'Variable', icon: 'Vr' },
   { key: 'math', label: 'Formula matematica', icon: 'Fx' },
   { key: 'section', label: 'Sub-seccion', icon: 'Sc' }

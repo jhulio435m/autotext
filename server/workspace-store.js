@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import { config } from './config.js';
 import { queryPlaneDb } from './db.js';
 import { resolveProjectCoverUrl, toAbsolutePlaneUrl } from './core/plane-mapper.js';
+import { sanitizeWorkspaceRichText } from './services/rich-text.js';
 
 function isRecord(value) {
   return value != null && typeof value === 'object' && !Array.isArray(value);
@@ -105,6 +106,7 @@ function toDocumentSummary(row) {
     type: row.type,
     description: row.description || '',
     updatedAt: row.updated_at || row.updatedAt || null,
+    versionHistory: Array.isArray(row.versionHistory) ? row.versionHistory : [],
     contentLoaded: false
   };
 }
@@ -119,6 +121,7 @@ function toDocumentDetail(row) {
     structure: Array.isArray(row.structure) ? row.structure : [],
     formData: isRecord(row.formData) ? row.formData : {},
     coverData: isRecord(row.coverData) ? row.coverData : {},
+    versionHistory: Array.isArray(row.versionHistory) ? row.versionHistory : [],
     updatedAt: row.updated_at || row.updatedAt || null,
     contentLoaded: true
   };
@@ -128,7 +131,7 @@ async function loadExistingWorkspaceForSave(client, userId) {
   const [projectsRes, varsRes, docsRes] = await Promise.all([
     client.query('SELECT id, name, description, code, accent_color as "accentColor", company_name as "companyName", logo, cover_photo as "coverPhoto", month, year, updated_at FROM app_projects WHERE user_id = $1', [userId]),
     client.query('SELECT project_id as "projectId", variable_key as "key", variable_value as "value", variable_label as "label", variable_type as "type" FROM app_project_variables apv JOIN app_projects ap ON ap.id = apv.project_id WHERE ap.user_id = $1', [userId]),
-    client.query('SELECT id, project_id as "projectId", name, type, description, structure, form_data as "formData", cover_data as "coverData", updated_at FROM app_documents WHERE project_id IN (SELECT id FROM app_projects WHERE user_id = $1)', [userId])
+    client.query('SELECT id, project_id as "projectId", name, type, description, structure, form_data as "formData", cover_data as "coverData", version_history as "versionHistory", updated_at FROM app_documents WHERE project_id IN (SELECT id FROM app_projects WHERE user_id = $1)', [userId])
   ]);
   const coverConfig = {};
   projectsRes.rows.forEach((p) => {
@@ -215,7 +218,7 @@ export async function loadWorkspaceState(appPool, userId, options = {}) {
   console.time(`load_workspace_${userId}`);
   const [projectsRes, docsRes, varsRes] = await Promise.all([
     appPool.query('SELECT id, name, description, code, accent_color as "accentColor", company_name as "companyName", logo, cover_photo as "coverPhoto", cover_photo as "coverImageUrl", month, year, updated_at FROM app_projects WHERE user_id = $1', [userId]),
-    appPool.query('SELECT id, project_id as "projectId", name, type, description, structure, form_data as "formData", cover_data as "coverData", updated_at FROM app_documents WHERE project_id IN (SELECT id FROM app_projects WHERE user_id = $1)', [userId]),
+    appPool.query('SELECT id, project_id as "projectId", name, type, description, structure, form_data as "formData", cover_data as "coverData", version_history as "versionHistory", updated_at FROM app_documents WHERE project_id IN (SELECT id FROM app_projects WHERE user_id = $1)', [userId]),
     appPool.query('SELECT project_id as "projectId", variable_key as "key", variable_value as "value", variable_label as "label", variable_type as "type" FROM app_project_variables WHERE project_id IN (SELECT id FROM app_projects WHERE user_id = $1)', [userId])
   ]);
   const coverConfig = {};
@@ -238,7 +241,7 @@ export async function loadWorkspaceState(appPool, userId, options = {}) {
 
 export async function loadDocumentState(appPool, userId, projectId, documentId) {
   const result = await appPool.query(
-    `SELECT id, project_id as "projectId", name, type, description, structure, form_data as "formData", cover_data as "coverData", updated_at
+    `SELECT id, project_id as "projectId", name, type, description, structure, form_data as "formData", cover_data as "coverData", version_history as "versionHistory", updated_at
      FROM app_documents
      WHERE id = $1 AND project_id = $2 AND user_id = $3
      LIMIT 1`,
@@ -251,7 +254,8 @@ export async function loadDocumentState(appPool, userId, projectId, documentId) 
 }
 
 export async function saveWorkspaceState(appPool, userId, rawWorkspace, options = {}) {
-  const { projects = [], documents = {}, coverConfig = {} } = rawWorkspace;
+  const sanitizedWorkspace = sanitizeWorkspaceRichText(rawWorkspace);
+  const { projects = [], documents = {}, coverConfig = {} } = sanitizedWorkspace;
   const { changedProjectId = null } = options;
   const client = await appPool.connect();
   try {
@@ -294,7 +298,8 @@ export async function saveWorkspaceState(appPool, userId, rawWorkspace, options 
           ? mergeCoverData(getExistingDocCoverData(existingDoc), d.coverData, true)
           : (isRecord(d.coverData) ? d.coverData : {});
 
-        await client.query(`INSERT INTO app_documents (id, project_id, user_id, name, type, description, structure, form_data, cover_data, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW()) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, type = EXCLUDED.type, description = EXCLUDED.description, structure = EXCLUDED.structure, form_data = EXCLUDED.form_data, cover_data = EXCLUDED.cover_data, updated_at = NOW()`, [d.id, projId, userId, d.name, d.type, d.description || '', JSON.stringify(nextStructure), JSON.stringify(nextFormData), JSON.stringify(nextCoverData)]);
+        const nextVersionHistory = Array.isArray(d.versionHistory) ? d.versionHistory.slice(0, 20) : [];
+        await client.query(`INSERT INTO app_documents (id, project_id, user_id, name, type, description, structure, form_data, cover_data, version_history, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW()) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, type = EXCLUDED.type, description = EXCLUDED.description, structure = EXCLUDED.structure, form_data = EXCLUDED.form_data, cover_data = EXCLUDED.cover_data, version_history = EXCLUDED.version_history, updated_at = NOW()`, [d.id, projId, userId, d.name, d.type, d.description || '', JSON.stringify(nextStructure), JSON.stringify(nextFormData), JSON.stringify(nextCoverData), JSON.stringify(nextVersionHistory)]);
 
         if (!preserveExisting) {
           await syncDocumentNodes(client, d.id, nextStructure);

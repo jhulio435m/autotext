@@ -122,7 +122,7 @@ function NodeRow({
           <button
             type='button'
             aria-label='Expandir o colapsar'
-            className='absolute z-10 grid h-[9px] w-[9px] cursor-pointer place-items-center border border-slate-400 bg-white text-slate-800 transition-colors hover:border-slate-500'
+            className='absolute z-10 grid h-3 w-3 cursor-pointer place-items-center border border-slate-400 bg-white text-slate-800 transition-colors hover:border-slate-500'
             style={{ left: `${depth * 16 + 8}px`, top: '50%', transform: 'translate(-50%, -50%)' }}
             onClick={(event) => {
               event.stopPropagation();
@@ -149,7 +149,7 @@ function NodeRow({
                   variable: Braces, latex_graph: Sigma, formula: Radical, ai_text: Sparkles 
                 }[node.type] || AlignLeft
               );
-              return <NodeIcon className={`h-[14px] w-[14px] mr-1.5 shrink-0 ${selected ? 'text-orange-500' : 'text-slate-400 group-hover:text-slate-500'}`} />;
+              return <NodeIcon className={`h-4 w-4 mr-1.5 shrink-0 ${selected ? 'text-orange-500' : 'text-slate-400 group-hover:text-slate-500'}`} />;
             })()}
             <p className={`truncate text-[13px] leading-5 ${selected ? 'bg-sky-600 text-white px-1.5 rounded-[3px] -ml-1.5 font-normal' : 'text-slate-700 group-hover:text-slate-900 font-normal'}`} title={nodeTitle}>
               {(() => {
@@ -219,7 +219,7 @@ function NodeRow({
             {...attributes}
             onClick={(event) => event.stopPropagation()}
           >
-            <GripVertical className='h-[15px] w-[15px]' />
+            <GripVertical className='h-4 w-4' />
           </button>
 
           <button
@@ -233,7 +233,7 @@ function NodeRow({
               useDocumentStore.getState().setPropertyModalOpen(true);
             }}
           >
-            <Settings className='h-[14px] w-[14px]' />
+            <Settings className='h-4 w-4' />
           </button>
 
           <button
@@ -246,7 +246,7 @@ function NodeRow({
               onRequestDelete(node.id);
             }}
           >
-            <Trash2 className='h-[15px] w-[15px]' />
+            <Trash2 className='h-4 w-4' />
           </button>
         </div>
 

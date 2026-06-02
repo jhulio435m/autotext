@@ -48,6 +48,17 @@ Punto de entrada de la aplicación (Express).
 - Configurable via `LOG_LEVEL` en env.
 - Incluye timestamp ISO, nivel, fuente y metadatos adicionales.
 
+### Seguridad de autenticacion (`server/services/auth-security.js`)
+- Centraliza la politica de contrasenas, hashing bcrypt, generacion de `jti` y hashing de identificadores de sesion.
+- Nuevas contrasenas usan bcrypt costo `12` por defecto (`AUTH_BCRYPT_COST`) y los hashes bcrypt antiguos se re-hashean al iniciar sesion correctamente.
+- La politica de contrasenas usa longitud minima configurable (`AUTH_PASSWORD_MIN_LENGTH`) y una denylist versionada en `server/security/common-passwords.txt`, descargada de SecLists `10k-most-common.txt`.
+- Los intentos fallidos incrementan `app_users.failed_login_count`; al superar `AUTH_FAILED_LOGIN_MAX`, `locked_until` bloquea temporalmente el login.
+- Los JWT incluyen `iat`, `exp` y `jti`. El `jti` se guarda hasheado en `app_user_sessions`, lo que permite revocar logout sin almacenar tokens en claro.
+- `POST /api/auth/logout` marca la sesion como revocada. `authRequired` solo acepta tokens no expirados con sesion activa.
+- El frontend conserva bearer tokens en `localStorage/sessionStorage` por compatibilidad. En despliegues HTTPS se puede activar cookie `HttpOnly` con `AUTH_SESSION_COOKIE_ENABLED=true` y `AUTH_SESSION_COOKIE_SECURE=true`.
+- Los eventos de seguridad se registran con `logger` sin passwords, JWTs, secretos ni hashes completos.
+- La gestion de cuenta vive bajo `/api/auth/me` y `/api/auth/change-password`: el usuario autenticado puede leer/actualizar su nombre visible y cambiar contrasena validando la actual. Al cambiar contrasena se revocan las demas sesiones activas mediante `app_user_sessions`, manteniendo el `jti` de la solicitud actual.
+
 ### Retry con Exponential Backoff (`server/infrastructure/plane-client.js`)
 - Hasta 3 reintentos con backoff: 1s, 2s, 4s.
 - Aplica a todas las llamadas `fetchPlaneApiJson`.
@@ -62,3 +73,13 @@ Punto de entrada de la aplicación (Express).
 - **Intercambiabilidad**: Podemos cambiar la API de Plane por otra sin tocar la lógica de exportación.
 - **Mantenibilidad**: Es fácil encontrar dónde reside cada parte de la lógica.
 - **Resiliencia**: Circuit breaker y retry protegen contra fallos en cascada de dependencias externas.
+
+## Capacidades documentales 2026-06
+
+- **Recuperacion y sesiones**: Auth soporta recuperacion de contrasena con tokens hasheados de un solo uso, expiracion corta, revocacion de sesiones y listado de dispositivos activos desde Cuenta.
+- **Bibliografia**: Cada documento puede guardar referencias en `coverData.__bibliography`, importar/exportar BibTeX, insertar `\cite{clave}` en el bloque seleccionado y validar citas sin referencia antes de exportar.
+- **Comentarios**: Los hilos de comentarios se guardan en `coverData.__comments`, se asocian a `nodeId`, pueden resolverse/reabrirse y se notifican entre pestanas con `BroadcastChannel`.
+- **Historial**: `app_documents.version_history` persiste snapshots manuales/autosave. La UI permite nombrar versiones, comparar contra el estado actual y restaurar guardando primero una version de resguardo.
+- **Offline/PWA**: La app incluye manifest y service worker para cache estatico. El cliente API cola autosaves `PUT/POST` cuando no hay conexion y reintenta al volver online.
+- **Diagramas**: El editor tiene bloque `diagram` con generacion asistida por IA/local fallback, previsualizacion visual para `flowchart TD` y exportacion LaTeX como TikZ o bloque verbatim para Mermaid.
+

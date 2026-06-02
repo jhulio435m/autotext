@@ -5,6 +5,7 @@ function hasStorage() {
 }
 
 export const AUTH_EXPIRED_EVENT = 'techdoc:auth-expired';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export function getSessionToken() {
   if (!hasStorage()) return '';
@@ -28,6 +29,18 @@ export function clearSessionToken() {
   if (!hasStorage()) return;
   window.localStorage.removeItem(STORAGE_KEYS.authToken);
   window.sessionStorage.removeItem(STORAGE_KEYS.authToken);
+}
+
+export function revokeSessionToken() {
+  const token = getSessionToken();
+  if (!token || typeof fetch !== 'function') return;
+
+  fetch(`${API_BASE}/auth/logout`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  }).catch(() => {});
 }
 
 export function notifyAuthExpired(detail = {}) {

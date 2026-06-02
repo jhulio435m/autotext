@@ -18,9 +18,11 @@ export function createDataProvider(config, overrides = {}) {
         return planeApi.listProjects(options);
       }
 
+      const workspaceSlug = config.planeWorkspaceSlug || '';
       return planeDb.listProjects({
         ...options,
         schema: options.schema || config.planeProjectSchema || 'public',
+        workspaceSlug,
         candidateTables: options.candidateTables || getPlaneProjectTableCandidates(config)
       });
     },

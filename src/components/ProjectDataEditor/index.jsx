@@ -428,7 +428,7 @@ function ProjectDataEditor({ projectId, docId }) {
                 <div className='rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm xl:col-span-10'>
                   <span className='mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500'>Identidad visual</span>
                   <div className='grid gap-4 md:grid-cols-[116px_minmax(0,1fr)] md:items-center'>
-                    <div className='flex h-[96px] w-[96px] items-center justify-center rounded-xl border border-slate-200 bg-slate-50 p-2'>
+                    <div className='flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 p-2'>
                       {normalizeImageUrl(metaDraft.logo) ? (
                         <img src={normalizeImageUrl(metaDraft.logo)} alt='Logo del proyecto' className='h-full w-full object-contain' />
                       ) : (

@@ -77,6 +77,7 @@ test('data provider falls back to Plane DB and injects DB defaults', async () =>
       options: {
         limit: 20,
         workspaceId: 'ws-1',
+        workspaceSlug: '',
         schema: 'custom_schema',
         candidateTables: ['project_project', 'projects']
       }

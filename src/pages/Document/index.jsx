@@ -1,14 +1,23 @@
-import { useState } from 'react';
+import { Suspense, lazy } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import TreePanel from '../../components/TreePanel';
-import DragDropCanvas from '../../components/DragDropCanvas';
-import PropertyPanelModal from '../../components/PropertyPanel';
-import Preview from '../../components/Preview';
 import useDocumentStore from '../../store';
-import ProjectDataEditor from '../../components/ProjectDataEditor';
-import DocumentBuilder from '../../components/DocumentBuilder';
-import DocumentPreview from '../../components/DocumentPreview';
 import { useDocumentRouteState } from './useDocumentRouteState';
+
+const TreePanel = lazy(() => import('../../components/TreePanel'));
+const DragDropCanvas = lazy(() => import('../../components/DragDropCanvas'));
+const PropertyPanelModal = lazy(() => import('../../components/PropertyPanel'));
+const Preview = lazy(() => import('../../components/Preview'));
+const ProjectDataEditor = lazy(() => import('../../components/ProjectDataEditor'));
+const DocumentBuilder = lazy(() => import('../../components/DocumentBuilder'));
+const DocumentPreview = lazy(() => import('../../components/DocumentPreview'));
+
+function ContentFallback({ message = 'Cargando editor...' }) {
+  return (
+    <div className='rounded-xl border border-slate-200 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)]'>
+      <p className='text-sm text-slate-600'>{message}</p>
+    </div>
+  );
+}
 
 function Document() {
   const navigate = useNavigate();
@@ -67,15 +76,27 @@ function Document() {
   }
 
   if (mode === 'datos') {
-    return <ProjectDataEditor projectId={id} docId={docId} />;
+    return (
+      <Suspense fallback={<ContentFallback message='Cargando datos del proyecto...' />}>
+        <ProjectDataEditor projectId={id} docId={docId} />
+      </Suspense>
+    );
   }
 
   if (mode === 'constructor') {
-    return <DocumentBuilder />;
+    return (
+      <Suspense fallback={<ContentFallback message='Cargando constructor...' />}>
+        <DocumentBuilder />
+      </Suspense>
+    );
   }
 
   if (mode === 'preview') {
-    return <DocumentPreview />;
+    return (
+      <Suspense fallback={<ContentFallback message='Cargando preview...' />}>
+        <DocumentPreview />
+      </Suspense>
+    );
   }
 
   if (isLockedByAnotherUser) {
@@ -103,25 +124,24 @@ function Document() {
 
 
   return (
-    <section className='relative'>
-      <div
-        className='grid grid-cols-1 gap-3 xl:[grid-template-columns:var(--editor-left)_var(--editor-center)_var(--editor-right)]'
-        style={{ ...editorLayoutStyle, height: 'calc(100vh - 120px)' }}
-      >
-        {/* Left panel – independent hover-scroll */}
-        <div className='panel-scroll min-h-0'>
-          <TreePanel collapsed={leftCollapsed} onToggleCollapsed={setLeftCollapsed} />
+    <section className='flex flex-1 min-h-0 flex-col relative'>
+      <Suspense fallback={<ContentFallback />}>
+        <div
+          className='grid min-h-0 flex-1 grid-cols-1 gap-3 xl:[grid-template-columns:var(--editor-left)_var(--editor-center)_var(--editor-right)]'
+          style={editorLayoutStyle}
+        >
+          <div className='panel-scroll min-h-0'>
+            <TreePanel collapsed={leftCollapsed} onToggleCollapsed={setLeftCollapsed} />
+          </div>
+          <div className='panel-scroll min-h-0'>
+            <DragDropCanvas />
+          </div>
+          <div className='flex min-h-0 flex-col'>
+            <Preview embedded={true} editableText={false} />
+          </div>
         </div>
-        {/* Center panel – independent hover-scroll */}
-        <div className='panel-scroll min-h-0'>
-          <DragDropCanvas />
-        </div>
-        {/* Right panel – sticky toolbar + independent scroll for document */}
-        <div className='flex min-h-0 flex-col'>
-          <Preview embedded={true} editableText={false} />
-        </div>
-      </div>
-      <PropertyPanelModal open={propertyModalOpen} onClose={() => setPropertyModalOpen(false)} />
+        <PropertyPanelModal open={propertyModalOpen} onClose={() => setPropertyModalOpen(false)} />
+      </Suspense>
     </section>
   );
 }

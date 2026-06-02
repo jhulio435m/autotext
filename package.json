@@ -18,7 +18,6 @@
     "profile:local": "bash scripts/use-profile.sh local",
     "profile:plane-db": "bash scripts/use-profile.sh plane-db",
     "profile:plane-api": "bash scripts/use-profile.sh plane-api",
-
     "db:init": "node server/scripts/init-db.js",
     "test": "node --test",
     "test:unit": "node --test test/**/*.test.js",
@@ -48,6 +47,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.1",
+    "sanitize-html": "^2.17.4",
     "tippy.js": "^6.3.7",
     "zustand": "^5.0.11"
   },

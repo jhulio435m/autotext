@@ -1,22 +1,36 @@
 import { useEffect, useState } from 'react';
 import useDocumentStore from '../store';
 import MathEditor from './MathEditor';
-import TableEditor from './TableEditor';
 import ImageUploader from './ImageUploader';
-import { apiGenerateText } from '../api/client';
+import { apiGenerateDiagram, apiGenerateText } from '../api/client';
 import { interpolate } from '../utils/latex';
 import AutoTextarea from './ui/AutoTextarea';
-import RichTextEditor from './ui/RichTextEditor';
+import LazyRichTextEditor from './ui/LazyRichTextEditor';
+import LazyTableEditor from './ui/LazyTableEditor';
 import { getBlockCompletionState } from '../utils/section-guide';
+import { sanitizeRichTextHtml, wrapPlainTextAsRichText } from '../utils/richText';
 
 function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 767px)').matches);
+  const getMatches = () => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+    return window.matchMedia('(max-width: 767px)').matches;
+  };
+
+  const [isMobile, setIsMobile] = useState(getMatches);
 
   useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+
     const query = window.matchMedia('(max-width: 767px)');
     const handler = (event) => setIsMobile(event.matches);
-    query.addEventListener('change', handler);
-    return () => query.removeEventListener('change', handler);
+
+    if (typeof query.addEventListener === 'function') {
+      query.addEventListener('change', handler);
+      return () => query.removeEventListener('change', handler);
+    }
+
+    query.addListener(handler);
+    return () => query.removeListener(handler);
   }, []);
 
   return isMobile;
@@ -68,7 +82,7 @@ function FormField({ block, value, readOnlyMobile = false }) {
           </div>
         )}
         
-        <RichTextEditor
+        <LazyRichTextEditor
           value={textValue}
           onChange={(val) => updateFormData(block.id, val)}
           placeholder={block.label || 'Escribe aquí...'}
@@ -89,12 +103,12 @@ function FormField({ block, value, readOnlyMobile = false }) {
                   const prompt = block.type === 'ai_text' ? aiPrompt : block.promptIA;
                   const result = await apiGenerateText(prompt || block.label || '', {});
                   if (result?.html) {
-                    updateFormData(block.id, result.html);
+                    updateFormData(block.id, sanitizeRichTextHtml(result.html));
                   } else {
-                    updateFormData(block.id, `<p>${result?.text || 'Sin respuesta de IA'}</p>`);
+                    updateFormData(block.id, sanitizeRichTextHtml(result?.text) || wrapPlainTextAsRichText(result?.text || 'Sin respuesta de IA'));
                   }
                 } catch {
-                  updateFormData(block.id, '<p>Error al generar con IA.</p>');
+                  updateFormData(block.id, wrapPlainTextAsRichText('Error al generar con IA.'));
                 } finally {
                   setLoadingIA(false);
                 }
@@ -112,7 +126,7 @@ function FormField({ block, value, readOnlyMobile = false }) {
     return (
       <div className={`space-y-2 ${mobileReadonlyClass}`}>
         {fieldMeta}
-        <TableEditor block={block} value={value || { rows: [] }} onChange={(next) => updateFormData(block.id, next)} />
+        <LazyTableEditor block={block} value={value || { rows: [] }} onChange={(next) => updateFormData(block.id, next)} />
       </div>
     );
   }
@@ -122,6 +136,49 @@ function FormField({ block, value, readOnlyMobile = false }) {
       <div className={`space-y-2 ${mobileReadonlyClass}`}>
         {fieldMeta}
         <ImageUploader block={block} value={value || {}} onChange={(next) => updateFormData(block.id, next)} />
+      </div>
+    );
+  }
+
+
+  if (block.type === 'diagram') {
+    const diagramValue = value && typeof value === 'object' ? value : { code: value || block.content || '', format: block.diagramFormat || 'mermaid' };
+    return (
+      <div className={`space-y-2 ${mobileReadonlyClass}`}>
+        {fieldMeta}
+        <textarea
+          rows={5}
+          value={diagramValue.code || ''}
+          disabled={disabled}
+          onChange={(event) => updateFormData(block.id, { ...diagramValue, code: event.target.value })}
+          className='w-full rounded-md border border-slate-200 px-3 py-2 font-mono text-xs text-slate-800 outline-none focus:border-sky-300 focus:ring-2 focus:ring-sky-100'
+        />
+        <div className='flex flex-wrap items-center gap-2'>
+          <input
+            type='text'
+            value={block.promptIA || ''}
+            disabled={disabled}
+            placeholder='Describe el diagrama para generarlo con IA'
+            onChange={(event) => updateNodeProps(block.id, { promptIA: event.target.value })}
+            className='w-full sm:min-w-[220px] flex-1 rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-300'
+          />
+          <button
+            type='button'
+            disabled={loadingIA || disabled}
+            onClick={async () => {
+              setLoadingIA(true);
+              try {
+                const result = await apiGenerateDiagram(block.promptIA || block.label || 'diagrama tecnico', diagramValue.format || 'mermaid');
+                updateFormData(block.id, { ...diagramValue, code: result?.code || diagramValue.code || '', format: result?.format || diagramValue.format || 'mermaid' });
+              } finally {
+                setLoadingIA(false);
+              }
+            }}
+            className='rounded-md border border-sky-700 bg-sky-700 px-3 py-2 text-sm font-semibold text-white hover:bg-sky-800 disabled:opacity-50'
+          >
+            {loadingIA ? 'Generando...' : 'Generar'}
+          </button>
+        </div>
       </div>
     );
   }

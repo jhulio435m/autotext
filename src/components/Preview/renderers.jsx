@@ -6,6 +6,7 @@ import { buildTableExportValue } from '../../utils/exportModel.js';
 import FormField from '../FormField';
 import AutoTextarea from '../ui/AutoTextarea';
 import { getBlockCompletionState, getCompletionState } from '../../utils/section-guide';
+import { sanitizeRichTextHtml } from '../../utils/richText';
 
 export function renderMath(expression) {
   try {
@@ -15,7 +16,38 @@ export function renderMath(expression) {
   }
 }
 
-import RichTextEditor from '../ui/RichTextEditor';
+import LazyRichTextEditor from '../ui/LazyRichTextEditor';
+
+
+function renderMermaidFlowchart(code) {
+  const edges = String(code || '').split(/\r?\n/).map((line) => line.trim()).filter((line) => line.includes('-->'));
+  if (!edges.length) return null;
+  const labels = new Map();
+  const order = [];
+  const readNode = (raw) => {
+    const match = raw.trim().match(/^([A-Za-z0-9_]+)(?:\[([^\]]+)\])?/);
+    if (!match) return null;
+    const id = match[1];
+    const label = match[2] || id;
+    if (!labels.has(id)) { labels.set(id, label); order.push(id); }
+    return id;
+  };
+  edges.forEach((edge) => {
+    const [left, right] = edge.split('-->');
+    readNode(left);
+    readNode(right);
+  });
+  return (
+    <div className='flex flex-wrap items-center gap-2 rounded-md border border-sky-100 bg-sky-50 p-3'>
+      {order.map((id, index) => (
+        <div key={id} className='flex items-center gap-2'>
+          <span className='rounded-md border border-sky-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm'>{labels.get(id)}</span>
+          {index < order.length - 1 ? <span className='text-sky-500'>→</span> : null}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function normalizeCssColor(value) {
   if (!value) return undefined;
@@ -114,7 +146,7 @@ function renderEditableText(node, value, onChange) {
   const currentValue = typeof value === 'string' && value !== '' ? value : (node.content || '');
   return (
     <div className='group/inline-edit'>
-      <RichTextEditor
+      <LazyRichTextEditor
         value={currentValue}
         onChange={(val) => onChange(node.id, val)}
         placeholder='Escribe el texto aquí...'
@@ -280,7 +312,7 @@ export function renderPreviewBlock(node, formData, options = {}) {
   }
 
   // For structured types (table, image, variable, latex_graph), show FormField inline when editable
-  if (editableText && onEdit && ['table', 'image', 'latex_graph', 'variable'].includes(node.type)) {
+  if (editableText && onEdit && ['table', 'image', 'latex_graph', 'diagram', 'variable'].includes(node.type)) {
     return <FormField block={node} value={value} />;
   }
 
@@ -298,7 +330,7 @@ export function renderPreviewBlock(node, formData, options = {}) {
       return (
         <div className='space-y-3 font-serif'>
           <div className={`overflow-x-auto ${isLandscape ? 'bg-slate-50/50 p-2' : ''}`}>
-            <table className='border-collapse text-sm bg-white border-t-2 border-b-2 border-slate-800 my-2' style={{ width: '100%', minWidth: isLandscape ? '1000px' : 'auto' }}>
+            <table className='border-collapse text-sm bg-white border-t-2 border-b-2 border-slate-800 my-2 w-full'>
               {columnWidths ? (
                 <colgroup>
                   {columnWidths.map((width, index) => (
@@ -399,6 +431,17 @@ export function renderPreviewBlock(node, formData, options = {}) {
     );
   }
 
+  if (node.type === 'diagram') {
+    const diagram = value && typeof value === 'object' ? value : { code: value || node.content || '' };
+    return (
+      <div className='rounded-md border border-slate-200 bg-slate-50 p-3'>
+        <p className='mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500'>Diagrama Mermaid</p>
+        {renderMermaidFlowchart(diagram.code) || <pre className='overflow-auto whitespace-pre rounded bg-white p-3 font-mono text-xs text-slate-700'>{diagram.code || '[Sin codigo]'}</pre>}
+        <pre className='mt-2 overflow-auto whitespace-pre rounded bg-white/70 p-2 font-mono text-[11px] text-slate-500'>{diagram.code || '[Sin codigo]'}</pre>
+      </div>
+    );
+  }
+
   if (node.type === 'latex_graph') {
     return <div dangerouslySetInnerHTML={{ __html: renderMath(value || node.content) }} />;
   }
@@ -422,7 +465,7 @@ export function renderPreviewBlock(node, formData, options = {}) {
     return (
       <div 
         className='whitespace-pre-wrap text-sm leading-relaxed prose prose-sm max-w-none text-justify font-serif'
-        dangerouslySetInnerHTML={{ __html: String(value || node.content || '') }}
+        dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(String(value || node.content || '')) }}
       />
     );
   }
@@ -461,7 +504,7 @@ export function renderPreviewNode(node, formData, prefix = [], trail = [], optio
             <p className={headingClassName}>
               <span className='mr-2'>{prefix.join('.')}.</span>
               <span>{node.title}:</span>{' '}
-              <span className='font-normal normal-case tracking-normal text-slate-700' dangerouslySetInnerHTML={{ __html: String(formData[inlineCandidate.id] || inlineCandidate.content || '') }} />
+              <span className='font-normal normal-case tracking-normal text-slate-700' dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(String(formData[inlineCandidate.id] || inlineCandidate.content || '')) }} />
             </p>
           ) : (
             <HeadingTag className={headingClassName}>
@@ -513,7 +556,7 @@ export function renderPreviewNode(node, formData, prefix = [], trail = [], optio
               value={node.title || ''}
               onChange={(event) => options.updateNodeProps(node.id, { title: event.target.value })}
               onFocus={() => options.setSelectedId?.(node.id)}
-              className='min-w-[220px] flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 text-xl font-bold text-slate-900 outline-none transition hover:border-slate-200 focus:border-sky-300 focus:ring-1 focus:ring-sky-100'
+              className='w-full sm:min-w-[220px] flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 text-xl font-bold text-slate-900 outline-none transition hover:border-slate-200 focus:border-sky-300 focus:ring-1 focus:ring-sky-100'
             />
           ) : (
             <h2 className='text-xl font-bold text-slate-900'>{node.title}</h2>

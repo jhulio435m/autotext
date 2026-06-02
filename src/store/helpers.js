@@ -125,7 +125,7 @@ function normalizeDocumentRecord(doc) {
     formData: contentLoaded && isRecord(doc.formData) ? doc.formData : {},
     coverData: contentLoaded ? coverData : {},
     contentLoaded,
-    versionHistory: Array.isArray(doc.versionHistory) ? doc.versionHistory.slice(0, 3) : [],
+    versionHistory: Array.isArray(doc.versionHistory) ? doc.versionHistory.slice(0, 20) : [],
     lock: isRecord(doc.lock) ? doc.lock : null
   };
 }

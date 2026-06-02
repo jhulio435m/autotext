@@ -18,6 +18,12 @@ import {
 import { htmlToPlainText, interpolate, renderTextParagraphs } from './text.js';
 import { renderTable } from './tables.js';
 
+function truncateLatexText(text, maxLen = 60) {
+  const cleaned = String(text || '').replace(/\s+/g, ' ').trim();
+  if (cleaned.length <= maxLen) return cleaned;
+  return cleaned.slice(0, maxLen).replace(/\s+\S*$/, '') + '...';
+}
+
 function getLevelIndent(level) {
   return Math.max(0, level - 1);
 }
@@ -31,7 +37,8 @@ function wrapIndentedBlock(content, indentEm = 0) {
 function renderSection(node, numbering) {
   const level = Math.max(1, Math.min(5, numbering.length || 1));
   const cmd = SECTION_COMMANDS[level - 1];
-  return wrapIndentedBlock(`\\${cmd}{${escapeLatex(node.title || 'Seccion')}}\n`, getLevelIndent(level));
+  const body = `\\${cmd}{${escapeLatex(node.title || 'Seccion')}}${getCounterResetCommands(level)}\n`;
+  return wrapIndentedBlock(body, getLevelIndent(level));
 }
 
 function getCounterResetCommands(level) {
@@ -112,11 +119,34 @@ function renderInlineLabel(label, value) {
   return `\\textbf{${escapeLatex(label || 'Campo')}:} ${escapeLatex(value || '[PENDIENTE]')}\n\n`;
 }
 
+
+function renderBibliography(entries = []) {
+  if (!Array.isArray(entries) || entries.length === 0) return '';
+  const rows = entries.map((entry) => {
+    const key = escapeLatex(entry.key || entry.id || 'ref');
+    const author = escapeLatex(entry.author || 'Autor no registrado');
+    const year = entry.year ? ` (${escapeLatex(entry.year)})` : '';
+    const title = escapeLatex(entry.title || entry.key || entry.id || 'Referencia');
+    return `\bibitem{${key}} ${author}${year}. \textit{${title}}.`;
+  });
+  return ['\section*{Bibliografía}', '\begin{thebibliography}{99}', ...rows, '\end{thebibliography}', ''].join('\n');
+}
+
 function renderBlock(node, level = 1) {
   const indent = getLevelIndent(level);
   if (node.exportKind === 'table') {
     return wrapIndentedBlock(`${renderTable(node, node.exportValue)}\n`, indent);
   }
+
+  if (node.exportKind === 'diagram') {
+    const diagram = node.exportValue || {};
+    const code = String(diagram.code || '').trim();
+    if (diagram.format === 'tikz' && code) {
+      return wrapIndentedBlock([node.label ? `\\textbf{${escapeLatex(node.label)}}\\par` : '', code, ''].filter(Boolean).join('\n'), indent);
+    }
+    return wrapIndentedBlock([node.label ? `\\textbf{${escapeLatex(node.label)}}\\par` : '', '\\begin{verbatim}', code || 'Diagrama pendiente', '\\end{verbatim}', ''].filter(Boolean).join('\n'), indent);
+  }
+
 
   if (node.exportKind === 'latex_graph') {
     const expr = node.exportExpression;
@@ -170,8 +200,8 @@ function renderNodesRecursive(nodes, numbering = []) {
 
 export function generateLatex(structure, formData, cover) {
   const rawDocumentTitle = getCoverValue(cover, 'title') || 'Documento Tecnico';
-  const documentTitle = escapeLatex(rawDocumentTitle);
-  const projectName = escapeLatex(firstNonEmpty(buildProjectName(cover), rawDocumentTitle));
+  const documentTitle = escapeLatex(truncateLatexText(rawDocumentTitle, 60));
+  const projectName = escapeLatex(truncateLatexText(firstNonEmpty(buildProjectName(cover), rawDocumentTitle), 55));
   const locationLabel = escapeLatex(firstNonEmpty(buildLocationLabel(cover), 'Ubicacion por definir'));
   const primaryColor = hexToRgbString(getCoverValue(cover, 'primaryColor'));
   const pageSettings = normalizePageSettings(cover);

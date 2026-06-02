@@ -3,7 +3,10 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 
 const Layout = lazy(() => import('../layouts/Layout'));
 const Login = lazy(() => import('../pages/Login'));
+const ForgotPassword = lazy(() => import('../pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('../pages/ResetPassword'));
 const Dashboard = lazy(() => import('../pages/Dashboard'));
+const Account = lazy(() => import('../pages/Account'));
 const Project = lazy(() => import('../pages/Project'));
 const Document = lazy(() => import('../pages/Document'));
 
@@ -20,9 +23,12 @@ function AppRoutes() {
     <Suspense fallback={<RouteFallback />}>
       <Routes>
         <Route path='/' element={<Login />} />
+        <Route path='/recuperar-contrasena' element={<ForgotPassword />} />
+        <Route path='/restablecer-contrasena' element={<ResetPassword />} />
 
         <Route element={<Layout />}>
           <Route path='/dashboard' element={<Dashboard />} />
+          <Route path='/cuenta' element={<Account />} />
           <Route path='/proyecto/:id/datos' element={<Project />} />
           <Route path='/proyecto/:id/documentos' element={<Project />} />
           <Route path='/proyecto/:id/documento/:docId/:mode' element={<Document />} />
