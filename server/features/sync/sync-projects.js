@@ -69,12 +69,28 @@ export async function syncProjectsFromPlane() {
   }
 }
 
-// Iniciar el loop de sincronización
-export function startPlaneSyncInterval(intervalMs = 300000) { // 5 minutos por defecto
-  // Primera ejecución tras el arranque del servidor
-  setTimeout(syncProjectsFromPlane, 5000);
-  
-  // Ejecución periódica
-  setInterval(syncProjectsFromPlane, intervalMs);
+// Iniciar el loop de sincronización con backoff exponencial
+export function startPlaneSyncInterval(intervalMs = 300000) {
+  const BASE_DELAY = 5000;
+  const MAX_INTERVAL = 3600000;
+  let consecutiveFailures = 0;
+
+  async function tick() {
+    try {
+      await syncProjectsFromPlane();
+      consecutiveFailures = 0;
+    } catch {
+      consecutiveFailures += 1;
+    }
+
+    const backoff = Math.min(
+      MAX_INTERVAL,
+      intervalMs * (2 ** Math.min(consecutiveFailures - 1, 6))
+    );
+    const nextDelay = consecutiveFailures > 0 ? Math.max(backoff, BASE_DELAY) : intervalMs;
+    setTimeout(tick, nextDelay);
+  }
+
+  setTimeout(tick, BASE_DELAY);
 }
 
