@@ -14,6 +14,8 @@ import { startPlaneSyncInterval } from './features/sync/sync-projects.js';
 import { createInMemoryRateLimiter } from './services/rate-limit.js';
 import { AUTH_COOKIE_NAME, createAccessToken, findActiveSession, hashJwtId } from './services/auth-security.js';
 import { runMigrations } from './db/migrate.js';
+import { openApiSpec } from './docs/openapi.js';
+import swaggerUi from 'swagger-ui-express';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -226,6 +228,11 @@ app.use('/api/projects', ...apiRateLimitedOptional);
 app.use('/api/documents', ...apiRateLimitedOptional);
 app.use('/api/templates', ...apiRateLimitedOptional);
 app.use('/api/integration', ...apiRateLimitedOptional);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiSpec, {
+  customSiteTitle: 'Autotext API Docs',
+  customCss: '.swagger-ui .topbar { display: none }'
+}));
 
 registerAppRoutes(app, { appPool, config, authRequired, authOptionalInDev, requireAdmin, createToken, normalizeUserRow });
 registerIntegrationRoutes(app, { appPool, config, authRequired, authOptionalInDev });
