@@ -187,6 +187,14 @@ export function apiAdminListUsers() {
   return request('/admin/users');
 }
 
+export function apiDeleteProject(projectId) {
+  return request(`/projects/${projectId}`, { method: 'DELETE' });
+}
+
+export function apiDeleteDocument(projectId, documentId) {
+  return request(`/documents/${projectId}/${documentId}`, { method: 'DELETE' });
+}
+
 export function apiGetWorkspace() {
   return request('/workspace', { cacheKey: 'workspace' });
 }

@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import useDocumentStore from '../../store';
 import DocumentCard from '../../components/DocumentCard';
-import { apiGetPlaneProjectIssues, apiGetPlaneProjects } from '../../api/client';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import { apiDeleteDocument, apiGetPlaneProjectIssues, apiGetPlaneProjects } from '../../api/client';
 
 const EMPTY_DOCS = Object.freeze([]);
 
@@ -45,6 +46,21 @@ function Project() {
   const setProjectsFromPlane = useDocumentStore((state) => state.setProjectsFromPlane);
   const setDocumentsFromPlaneIssues = useDocumentStore((state) => state.setDocumentsFromPlaneIssues);
   const pushToast = useDocumentStore((state) => state.pushToast);
+
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+  const handleDeleteDocument = async () => {
+    if (!deleteConfirm) return;
+    try {
+      await apiDeleteDocument(id, deleteConfirm.id);
+      useDocumentStore.getState().removeDocument(id, deleteConfirm.id);
+      pushToast('Documento eliminado.', 'success');
+    } catch (error) {
+      pushToast(`No se pudo eliminar: ${error?.message || 'error desconocido'}`, 'error');
+    } finally {
+      setDeleteConfirm(null);
+    }
+  };
 
   const [loadingPlaneProjects, setLoadingPlaneProjects] = useState(false);
   const [planeProjectsLoaded, setPlaneProjectsLoaded] = useState(false);
@@ -152,6 +168,7 @@ function Project() {
         key={doc.id}
         doc={doc}
         onOpen={() => navigate(`/proyecto/${id}/documento/${doc.id}/constructor`)}
+        onDelete={doc.source === 'plane_issue' ? undefined : () => setDeleteConfirm(doc)}
       />
     );
   };
@@ -239,6 +256,15 @@ function Project() {
             </div>
           ) : null}
         </div>
+      {deleteConfirm ? (
+        <ConfirmDialog
+          open
+          title='Eliminar documento'
+          message={`Esta accion eliminara permanentemente "${deleteConfirm.name}". No se puede deshacer.`}
+          onCancel={() => setDeleteConfirm(null)}
+          onConfirm={handleDeleteDocument}
+        />
+      ) : null}
     </section>
   );
 }

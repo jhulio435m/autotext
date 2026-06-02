@@ -1,4 +1,4 @@
-import { Edit2, ExternalLink } from 'lucide-react';
+import { Edit2, ExternalLink, Trash2 } from 'lucide-react';
 
 function getInitials(name) {
   const parts = String(name || '')
@@ -24,7 +24,7 @@ function formatUpdatedAt(value) {
   }).format(date);
 }
 
-function ProjectCard({ project, onOpen, onEdit }) {
+function ProjectCard({ project, onOpen, onEdit, onDelete }) {
   const hasCoverImage = Boolean(project.coverImageUrl);
   const accentColor = project.accentColor || '#3b82f6';
   const sourceLabel = project.source === 'plane' ? 'Plane' : 'Local';
@@ -104,6 +104,15 @@ function ProjectCard({ project, onOpen, onEdit }) {
               <ExternalLink className='w-4 h-4' />
               Abrir
             </button>
+            {onDelete ? (
+              <button
+                type='button'
+                onClick={onDelete}
+                className='inline-flex h-9 items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-3 text-sm font-medium text-rose-600 transition hover:bg-rose-50'
+              >
+                <Trash2 className='w-4 h-4' />
+              </button>
+            ) : null}
           </div>
         </div>
       </div>
