@@ -1,15 +1,17 @@
 const options = [
-  { key: 'text', label: 'Bloque de texto', icon: 'Tx' },
+  { key: 'rich_text', label: 'Texto', icon: 'Tx' },
+  { key: 'template_text', label: 'Texto plantilla', icon: 'Tp' },
   { key: 'table', label: 'Tabla', icon: 'Tb' },
   { key: 'image', label: 'Imagen', icon: 'Im' },
-  { key: 'input', label: 'Variable / Input', icon: 'In' },
+  { key: 'diagram', label: 'Diagrama', icon: 'Dg' },
+  { key: 'input', label: 'Variable', icon: 'Vr' },
   { key: 'math', label: 'Formula matematica', icon: 'Fx' },
   { key: 'section', label: 'Sub-seccion', icon: 'Sc' }
 ];
 
 function InsertMenu({ onSelect }) {
   return (
-    <div className='animate-pop-in absolute right-0 top-8 z-20 w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-xl'>
+    <div className='absolute right-0 top-8 z-20 w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-xl'>
       <p className='px-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500'>Agregar elemento</p>
       <div className='space-y-1'>
         {options.map((option) => (

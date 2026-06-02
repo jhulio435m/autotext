@@ -1,133 +1,131 @@
-import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { useMemo, useState } from 'react';
 import useDocumentStore from '../../store';
-import { generateLatex, isValueEmpty } from '../../utils/latex';
+import PreviewToolbar from './PreviewToolbar';
+import { exportDocumentPdf, exportDocumentTex } from './export-actions';
+import { renderPreviewNode } from './renderers';
+// import HtmlCoverGallery from './HtmlCoverGallery';
+import { normalizePageSettings } from '../../utils/pageConfig';
 
 const EMPTY_COVER = Object.freeze({});
 
-function renderMath(expression) {
-  try {
-    return katex.renderToString(expression || '', { throwOnError: false, displayMode: true });
-  } catch {
-    return '<span style="color:#dc2626">[Formula invalida]</span>';
+function preferNonEmpty(...values) {
+  for (const value of values) {
+    if (typeof value === 'string') {
+      if (value.trim()) return value;
+      continue;
+    }
+    if (value != null) return value;
   }
+  return '';
 }
 
-function Preview({ projectId }) {
-  const [zoom, setZoom] = useState(100);
+function normalizePreviewColor(value) {
+  const color = String(value || '').trim();
+  return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(color) ? color : '#006399';
+}
+
+function Preview({ embedded = false, editableText = false, scrollContainerId = '' }) {
+  const [zoom, setZoom] = useState(embedded ? 62 : 100);
 
   const structure = useDocumentStore((state) => state.structure);
   const formData = useDocumentStore((state) => state.formData);
-  const projectCoverConfig = useDocumentStore((state) => state.coverConfig[projectId]);
+  const updateFormData = useDocumentStore((state) => state.updateFormData);
+  const updateNodeProps = useDocumentStore((state) => state.updateNodeProps);
+  const createVariableFromTemplateSelection = useDocumentStore((state) => state.createVariableFromTemplateSelection);
+  const setSelectedId = useDocumentStore((state) => state.setSelectedId);
+  const getCurrentDocument = useDocumentStore((state) => state.getCurrentDocument);
+  const getCurrentProject = useDocumentStore((state) => state.getCurrentProject);
+  const coverConfigByProject = useDocumentStore((state) => state.coverConfig);
   const validateRequiredBeforeExport = useDocumentStore((state) => state.validateRequiredBeforeExport);
   const pushToast = useDocumentStore((state) => state.pushToast);
-  const coverConfig = projectCoverConfig || EMPTY_COVER;
+  const currentDocument = getCurrentDocument();
+  const currentProject = getCurrentProject();
+  const projectCoverConfig = coverConfigByProject[currentProject?.id] || EMPTY_COVER;
+  const documentCoverData = currentDocument?.coverData || EMPTY_COVER;
+  const coverConfig = useMemo(() => ({
+    ...projectCoverConfig,
+    ...documentCoverData,
+    projectData: {
+      ...(projectCoverConfig.projectData || {}),
+      ...(documentCoverData.projectData || {})
+    },
+    companyName: preferNonEmpty(documentCoverData.companyName, projectCoverConfig.companyName),
+    slogan: preferNonEmpty(documentCoverData.slogan, projectCoverConfig.slogan),
+    subtitle: preferNonEmpty(documentCoverData.subtitle, projectCoverConfig.subtitle),
+    month: preferNonEmpty(documentCoverData.month, projectCoverConfig.month),
+    year: preferNonEmpty(documentCoverData.year, projectCoverConfig.year),
+    docCode: preferNonEmpty(documentCoverData.docCode, projectCoverConfig.docCode),
+    date: preferNonEmpty(documentCoverData.date, projectCoverConfig.date),
+    locationLabel: preferNonEmpty(documentCoverData.locationLabel, projectCoverConfig.locationLabel),
+    logo: preferNonEmpty(documentCoverData.logo, projectCoverConfig.logo),
+    title: currentDocument?.name || projectCoverConfig.title || documentCoverData.title || '',
+    coverPhoto: currentProject?.coverImageUrl || projectCoverConfig.coverPhoto || documentCoverData.coverPhoto || ''
+  }), [currentDocument?.name, currentProject?.coverImageUrl, documentCoverData, projectCoverConfig]);
+  const projectName = coverConfig.projectData?.var_nombre_proyecto || coverConfig.subtitle || currentDocument?.name || 'Proyecto';
+  const primaryColor = normalizePreviewColor(coverConfig.primaryColor);
+  const pageSettings = useMemo(() => normalizePageSettings(coverConfig), [coverConfig]);
+  const locationLabel = coverConfig.locationLabel
+    || [coverConfig.projectData?.var_provincia, coverConfig.projectData?.var_departamento].filter(Boolean).join(' -- ')
+    || 'Ubicacion por definir';
+  // When embedded in the editor right panel, use compact margins so more content is visible
+  const embeddedMargin = 8; // mm — minimal visual margin
+  const resolvedMarginTop    = embedded ? embeddedMargin : pageSettings.marginTop;
+  const resolvedMarginRight  = embedded ? embeddedMargin : pageSettings.marginRight;
+  const resolvedMarginBottom = embedded ? embeddedMargin : pageSettings.marginBottom;
+  const resolvedMarginLeft   = embedded ? embeddedMargin : pageSettings.marginLeft;
 
-  const sections = useMemo(() => {
+  const pageShellStyle = {
+    width: `${pageSettings.widthMm}mm`,
+    fontFamily: pageSettings.previewFontFamily,
+    fontSize: `${pageSettings.fontSize}pt`,
+    lineHeight: pageSettings.lineHeight
+  };
+  const contentPaddingStyle = {
+    paddingTop: `${resolvedMarginTop}mm`,
+    paddingRight: `${resolvedMarginRight}mm`,
+    paddingBottom: `${resolvedMarginBottom}mm`,
+    paddingLeft: `${resolvedMarginLeft}mm`
+  };
+  const contentHeight = Math.max(140, pageSettings.heightMm - resolvedMarginTop - resolvedMarginBottom);
+  const availableVariables = useMemo(() => {
     const items = [];
-    const walk = (nodes, prefix = []) => {
-      (nodes || []).forEach((node, index) => {
-        const current = [...prefix, index + 1];
-        if (node.isStructure) {
-          items.push({ id: node.id, title: node.title, number: current.join('.') });
-          walk(node.children || [], current);
+    const walk = (nodes) => {
+      (nodes || []).forEach((node) => {
+        if (node?.isStructure) {
+          walk(node.children || []);
+          return;
+        }
+        if (node?.type === 'variable') {
+          items.push({
+            id: node.id,
+            key: node.variableKey || node.id,
+            label: node.label || node.variableKey || node.id
+          });
         }
       });
     };
-    walk(structure, []);
+    walk(structure);
     return items;
   }, [structure]);
-
-  const renderBlock = (node) => {
-    const value = formData[node.id];
-
-    if (isValueEmpty(value)) {
-      return <p className='rounded bg-rose-50 px-2 py-1 text-sm text-rose-700'>[PENDIENTE: {node.label || node.id}]</p>;
-    }
-
-    if (node.type === 'table') {
-      const rows = value.rows || [];
-      return (
-        <div className='space-y-1'>
-          {value.caption ? <p className='text-sm font-semibold'>Tabla: {value.caption}</p> : null}
-          <table className='table-grid w-full border-collapse text-sm'>
-            <thead>
-              <tr>
-                {(node.columnHeaders || []).map((header) => (
-                  <th key={`${node.id}-${header}`} className='bg-slate-50 text-left'>{header}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, rowIndex) => (
-                <tr key={`${node.id}-${rowIndex}`}>
-                  {row.map((cell, colIndex) => (
-                    <td key={`${node.id}-${rowIndex}-${colIndex}`}>{cell}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {value.source ? <p className='text-xs text-slate-500'>Fuente: {value.source}</p> : null}
-        </div>
-      );
-    }
-
-    if (node.type === 'image') {
-      return (
-        <div className='space-y-2'>
-          <img src={value.file} alt={node.label} className='max-h-72 rounded border border-slate-200 object-contain' />
-          {value.caption ? <p className='text-sm'>{value.caption}</p> : null}
-          {value.source ? <p className='text-xs text-slate-500'>Fuente: {value.source}</p> : null}
-        </div>
-      );
-    }
-
-    if (node.type === 'math') {
-      return <div dangerouslySetInnerHTML={{ __html: renderMath(value || node.content) }} />;
-    }
-
-    return <p className='text-sm leading-relaxed'>{String(value)}</p>;
-  };
-
-  const renderNode = (node, prefix = []) => {
-    if (node.isStructure) {
-      return (
-        <section key={node.id} className='mt-6'>
-          <h2 className='text-xl font-bold text-slate-900'>
-            {prefix.join('.')} {node.title}
-          </h2>
-          <div className='mt-3 space-y-3'>
-            {(node.children || []).map((child, index) => renderNode(child, [...prefix, index + 1]))}
-          </div>
-        </section>
-      );
-    }
-
-    return (
-      <article key={node.id} className='space-y-2'>
-        <h3 className='text-sm font-semibold text-slate-700'>{node.label || node.id}</h3>
-        {renderBlock(node)}
-      </article>
-    );
-  };
 
   const handleExportTex = () => {
     const validation = validateRequiredBeforeExport();
     if (!validation.ok) {
-      pushToast('Hay campos obligatorios vacios. Revisa el formulario.', 'warning');
+      pushToast('Hay campos obligatorios vacíos. Revisa el documento.', 'warning');
       return;
     }
 
-    const tex = generateLatex(structure, formData, coverConfig);
-    const blob = new Blob([tex], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'documento.tex';
-    link.click();
-    URL.revokeObjectURL(url);
+    const payload = {
+      projectId: currentProject?.id || currentDocument?.issueProjectId || '',
+      documentId: currentDocument?.id || 'documento',
+      documentName: currentDocument?.name || 'Documento',
+      structure,
+      formData,
+      coverData: coverConfig
+    };
+
+    exportDocumentTex({ payload, structure, formData, coverConfig, currentDocument, pushToast });
   };
 
   const handleExportPdf = () => {
@@ -136,62 +134,99 @@ function Preview({ projectId }) {
       pushToast('Completa los campos obligatorios antes de exportar PDF.', 'warning');
       return;
     }
-    window.print();
+    const payload = {
+      projectId: currentProject?.id || currentDocument?.issueProjectId || '',
+      documentId: currentDocument?.id || 'documento',
+      documentName: currentDocument?.name || 'Documento',
+      structure,
+      formData,
+      coverData: coverConfig
+    };
+
+    exportDocumentPdf({ payload, pushToast });
   };
 
   return (
-    <section className='space-y-3'>
-      <header className='soft-panel flex flex-wrap items-center justify-between gap-2 p-3'>
-        <div className='flex flex-wrap gap-2'>
-          {[75, 100, 125].map((value) => (
-            <button
-              key={value}
-              type='button'
-              className={`btn-ghost px-3 py-1 text-sm ${zoom === value ? '!border-blue-300 !bg-blue-50 !text-blue-700' : ''}`}
-              onClick={() => setZoom(value)}
-            >
-              {value}%
-            </button>
-          ))}
-        </div>
+    <section className={`flex flex-col ${embedded ? 'min-w-0 h-full' : 'space-y-3'}`}>
+      <PreviewToolbar
+        compact={embedded}
+        zoom={zoom}
+        setZoom={setZoom}
+        onExportTex={handleExportTex}
+        onExportPdf={handleExportPdf}
+      />
 
-        <div className='flex flex-wrap gap-2'>
-          <button type='button' className='btn-ghost px-3 py-1 text-sm' onClick={() => window.print()}>Imprimir</button>
-          <button type='button' className='btn-ghost px-3 py-1 text-sm' onClick={handleExportTex}>Exportar .tex</button>
-          <button type='button' className='btn-primary px-3 py-1 text-sm' onClick={handleExportPdf}>Exportar PDF</button>
-        </div>
-      </header>
-
-      <div className='soft-panel overflow-auto bg-slate-100 p-6'>
-        <article
-          className='mx-auto rounded-lg bg-white p-10 shadow-lg'
+      <div
+        id={scrollContainerId || undefined}
+        className={`panel-scroll flex-1 overflow-x-hidden rounded-lg border border-slate-200 bg-slate-100 shadow-[0_1px_2px_rgba(15,23,42,0.04)] ${embedded ? 'p-2' : 'p-4'}`}
+      >
+        {/* Outer: constrains width to scaled size, centers the page, no height clip */}
+        <div
           style={{
-            width: '210mm',
-            minHeight: '297mm',
-            transform: `scale(${zoom / 100})`,
-            transformOrigin: 'top center',
-            fontFamily: 'Georgia, serif'
+            width: `${pageSettings.widthMm * (zoom / 100)}mm`,
+            margin: '0 auto',
           }}
         >
-          <section className='border-b border-slate-200 pb-8 text-center'>
-            <h1 className='text-3xl font-black'>{coverConfig.title || 'CARATULA'}</h1>
-            <p className='mt-2 text-sm text-slate-500'>{coverConfig.companyName || 'Empresa'}</p>
-            <p className='text-sm text-slate-500'>{coverConfig.docCode || 'Codigo'} | {coverConfig.version || 'Version'} | {coverConfig.date || '--'}</p>
-          </section>
+          {/* Inner full-size page that scales down keeping top-left anchor */}
+          <div
+            style={{
+              ...pageShellStyle,
+              transform: `scale(${zoom / 100})`,
+              transformOrigin: 'top left',
+              width: `${pageSettings.widthMm}mm`,
+            }}
+          >
+          {/* Caratula HTML desactivada temporalmente.
+          <HtmlCoverGallery
+            coverConfig={coverConfig}
+            currentDocumentName={currentDocument?.name}
+            previewWidth={pageShellStyle.width}
+            previewHeight={`${pageSettings.heightMm}mm`}
+          />
+          */}
 
-          <section className='mt-8'>
-            <h2 className='text-lg font-bold'>Tabla de contenidos</h2>
-            <ul className='mt-2 space-y-1 text-sm'>
-              {sections.map((section) => (
-                <li key={section.id}>{section.number}. {section.title}</li>
-              ))}
-            </ul>
-          </section>
+          <article className='overflow-hidden rounded-lg bg-white shadow-lg' style={{ ...pageShellStyle, minHeight: `${pageSettings.heightMm}mm` }}>
+            {pageSettings.showHeaderFooter ? <div className='h-[10px] w-full' style={{ backgroundColor: primaryColor }} /> : null}
+            <div className='flex flex-col' style={contentPaddingStyle}>
+              {pageSettings.showHeaderFooter ? (
+                <div className='border-b border-slate-300 pb-3 pt-1'>
+                  <div className='flex items-start gap-4'>
+                    <div className='min-w-0 flex-1'>
+                      <p className='text-[11px] font-bold uppercase leading-snug text-slate-800'>{projectName}</p>
+                    </div>
+                    <div className='flex h-16 w-20 shrink-0 items-center justify-end'>
+                      {coverConfig.logo ? (
+                        <img src={coverConfig.logo} alt='logo' className='max-h-full max-w-full object-contain' />
+                      ) : (
+                        <div className='flex h-14 w-16 items-center justify-center border border-slate-300 text-[10px] text-slate-400'>LOGO</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
 
-          <section className='mt-8 space-y-5'>
-            {structure.map((node, index) => renderNode(node, [index + 1]))}
-          </section>
-        </article>
+              <section className='space-y-5 pt-8' style={{ minHeight: `${Math.max(80, contentHeight - (pageSettings.showHeaderFooter ? 34 : 0) - 20)}mm` }}>
+                {structure.map((node, index) => renderPreviewNode(node, formData, [index + 1], [], {
+                  editableText,
+                  onEdit: updateFormData,
+                  availableVariables,
+                  onCreateVariable: createVariableFromTemplateSelection,
+                  updateNodeProps,
+                  setSelectedId
+                }))}
+              </section>
+
+              {pageSettings.showHeaderFooter ? (
+                <footer className='mt-6 flex items-center justify-between border-t border-slate-300 pt-2 text-[11px] text-slate-700'>
+                  <span>{locationLabel}</span>
+                  <span>{currentDocument?.name || coverConfig.title || 'Documento tecnico'}</span>
+                  <span>Pagina 1</span>
+                </footer>
+              ) : null}
+            </div>
+          </article>
+          </div>{/* end inner scale div */}
+        </div>{/* end outer shrink-wrap */}
       </div>
     </section>
   );

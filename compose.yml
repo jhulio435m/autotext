@@ -1,0 +1,33 @@
+services:
+  autotext:
+    build: .
+    container_name: autotext
+    restart: unless-stopped
+    ports:
+      - "172.17.0.1:4010:4000"
+    env_file:
+      - ./.env
+      - ./server/.env
+    environment:
+      API_HOST: 0.0.0.0
+      API_PORT: 4000
+      APP_DB_HOST: expedientes-db
+      APP_DB_PORT: 5432
+      PLANE_DB_HOST: plane-db
+      PLANE_DB_PORT: 5432
+      APP_DB_DOCKER_CONTAINER: expedientes-db
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/api/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - autoexp_default
+      - plane_default
+
+networks:
+  autoexp_default:
+    external: true
+  plane_default:
+    external: true

@@ -1,0 +1,357 @@
+export const formato6AFullStructure = [
+  {
+    id: 'sec_fmt6a_001',
+    isStructure: true,
+    level: 1,
+    title: 'Identificacion del documento',
+    expanded: true,
+    canvasExpanded: true,
+    children: [
+      {
+        id: 'sec_fmt6a_001_1',
+        isStructure: true,
+        level: 2,
+        title: 'Control documental',
+        expanded: true,
+        canvasExpanded: true,
+        children: [
+          {
+            id: 'var_fmt6a_codigo',
+            isStructure: false,
+            type: 'variable',
+            label: 'Codigo interno del documento',
+            required: true,
+            inputType: 'text',
+            inputPlaceholder: 'Ej: 02-FORMATO-6A',
+            coverField: 'docCode'
+          },
+          {
+            id: 'var_fmt6a_version',
+            isStructure: false,
+            type: 'variable',
+            label: 'Version del documento',
+            required: true,
+            inputType: 'text',
+            inputPlaceholder: 'Ej: 1.0',
+            coverField: 'version'
+          },
+          {
+            id: 'var_fmt6a_fecha',
+            isStructure: false,
+            type: 'variable',
+            label: 'Fecha de emision',
+            required: true,
+            inputType: 'date',
+            coverField: 'date'
+          }
+        ]
+      },
+      {
+        id: 'sec_fmt6a_001_2',
+        isStructure: true,
+        level: 2,
+        title: 'Clasificacion y responsables',
+        expanded: true,
+        canvasExpanded: true,
+        children: [
+          {
+            id: 'var_fmt6a_disciplina',
+            isStructure: false,
+            type: 'variable',
+            label: 'Disciplina',
+            required: true,
+            inputType: 'select',
+            inputOptions: ['Geotecnia', 'Hidraulica', 'Estructural', 'Ambiental', 'Topografia']
+          },
+          {
+            id: 'var_fmt6a_responsable',
+            isStructure: false,
+            type: 'variable',
+            label: 'Responsable principal',
+            required: true,
+            inputType: 'text',
+            inputPlaceholder: 'Nombre y cargo'
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'sec_fmt6a_002',
+    isStructure: true,
+    level: 1,
+    title: 'Contexto y alcance',
+    expanded: true,
+    canvasExpanded: true,
+    children: [
+      {
+        id: 'sec_fmt6a_002_1',
+        isStructure: true,
+        level: 2,
+        title: 'Antecedentes del proyecto',
+        expanded: true,
+        canvasExpanded: true,
+        children: [
+          {
+            id: 'var_fmt6a_proyecto',
+            isStructure: false,
+            type: 'variable',
+            label: 'Nombre del proyecto',
+            required: true,
+            inputType: 'text',
+            inputPlaceholder: 'Ej: Mejoramiento vial tramo norte'
+          }
+        ]
+      },
+      {
+        id: 'sec_fmt6a_002_2',
+        isStructure: true,
+        level: 2,
+        title: 'Marco de desarrollo del formato',
+        expanded: true,
+        canvasExpanded: true,
+        children: [
+          {
+            id: 'sec_fmt6a_002_2_1',
+            isStructure: true,
+            level: 3,
+            title: 'Contexto de intervencion',
+            expanded: true,
+            canvasExpanded: true,
+            children: [
+              {
+                id: 'sec_fmt6a_002_2_1_1',
+                isStructure: true,
+                level: 4,
+                title: 'Objetivo documental',
+                expanded: true,
+                canvasExpanded: true,
+                children: [
+                  {
+                    id: 'sec_fmt6a_002_2_1_1_1',
+                    isStructure: true,
+                    level: 5,
+                    title: 'Alcance y restricciones',
+                    expanded: true,
+                    canvasExpanded: true,
+                    children: [
+                      {
+                        id: 'var_fmt6a_objetivo',
+                        isStructure: false,
+                        type: 'text',
+                        label: 'Objetivo del documento',
+                        content: 'Describe con claridad el objetivo tecnico del formato.',
+                        required: true,
+                        promptIA: 'Redacta el objetivo del documento con tono tecnico, preciso y formal.'
+                      },
+                      {
+                        id: 'var_fmt6a_alcance',
+                        isStructure: false,
+                        type: 'text',
+                        label: 'Alcance',
+                        content: 'Define el alcance, los limites y exclusiones del documento.',
+                        required: true,
+                        promptIA: 'Redacta el alcance del documento indicando limites, entregables y criterios de aplicacion.'
+                      },
+                      {
+                        id: 'var_fmt6a_resumen',
+                        isStructure: false,
+                        type: 'ai_text',
+                        label: 'Resumen ejecutivo',
+                        content: 'Resumen ejecutivo autogenerado a partir del contexto del documento.',
+                        required: true,
+                        promptTemplate:
+                          'Redacta un resumen ejecutivo profesional para el proyecto {{var_fmt6a_proyecto}}, considerando el objetivo {{var_fmt6a_objetivo}} y el alcance {{var_fmt6a_alcance}}.',
+                        inputVariables: ['var_fmt6a_proyecto', 'var_fmt6a_objetivo', 'var_fmt6a_alcance'],
+                        generationMode: 'manual'
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'sec_fmt6a_003',
+    isStructure: true,
+    level: 1,
+    title: 'Datos tecnicos base',
+    expanded: true,
+    canvasExpanded: true,
+    children: [
+      {
+        id: 'sec_fmt6a_003_1',
+        isStructure: true,
+        level: 2,
+        title: 'Insumos y referencias',
+        expanded: true,
+        canvasExpanded: true,
+        children: [
+          {
+            id: 'var_fmt6a_tabla_insumos',
+            isStructure: false,
+            type: 'table',
+            label: 'Tabla de insumos y referencias',
+            required: true,
+            columnCount: 4,
+            columnHeaders: ['Item', 'Descripcion', 'Fuente', 'Observaciones'],
+            columnAlign: ['L', 'L', 'L', 'L'],
+            tableStyle: 'booktabs',
+            tableEnvironment: 'auto',
+            hasCaption: true,
+            hasSource: true,
+            hasDescription: true,
+            hasLabel: true
+          },
+          {
+            id: 'var_fmt6a_imagen_referencia',
+            isStructure: false,
+            type: 'image',
+            label: 'Imagen o plano de referencia',
+            required: true,
+            width: 'full',
+            float: true,
+            hasCaption: true,
+            hasSource: true,
+            hasDescription: true,
+            hasLabel: true
+          }
+        ]
+      },
+      {
+        id: 'sec_fmt6a_003_2',
+        isStructure: true,
+        level: 2,
+        title: 'Definicion de parametros',
+        expanded: true,
+        canvasExpanded: true,
+        children: [
+          {
+            id: 'sec_fmt6a_003_2_1',
+            isStructure: true,
+            level: 3,
+            title: 'Modelacion de calculo',
+            expanded: true,
+            canvasExpanded: true,
+            children: [
+              {
+                id: 'var_fmt6a_formula',
+                isStructure: false,
+                type: 'latex_graph',
+                label: 'Formula o expresion tecnica',
+                required: true,
+                mathType: 'align',
+                content: 'Q = A \\\\cdot V',
+                mathVariables: ['Q', 'A', 'V'],
+                hasLabel: true
+              },
+              {
+                id: 'var_fmt6a_parametro',
+                isStructure: false,
+                type: 'variable',
+                label: 'Parametro clave',
+                required: true,
+                inputType: 'number',
+                inputUnit: '-',
+                inputMin: 0,
+                inputMax: 9999,
+                inputPlaceholder: '0.0'
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'sec_fmt6a_004',
+    isStructure: true,
+    level: 1,
+    title: 'Analisis y resultados',
+    expanded: true,
+    canvasExpanded: true,
+    children: [
+      {
+        id: 'sec_fmt6a_004_1',
+        isStructure: true,
+        level: 2,
+        title: 'Evaluacion tecnica',
+        expanded: true,
+        canvasExpanded: true,
+        children: [
+          {
+            id: 'var_fmt6a_analisis',
+            isStructure: false,
+            type: 'text',
+            label: 'Analisis tecnico',
+            content: 'Desarrolla aqui el analisis tecnico de los resultados obtenidos.',
+            required: true,
+            promptIA: 'Redacta un analisis tecnico de resultados con lenguaje formal y conclusiones objetivas.'
+          },
+          {
+            id: 'var_fmt6a_tabla_resultados',
+            isStructure: false,
+            type: 'table',
+            label: 'Tabla de resultados',
+            required: true,
+            columnCount: 5,
+            columnHeaders: ['Muestra', 'Valor', 'Unidad', 'Criterio', 'Cumple'],
+            columnAlign: ['L', 'C', 'C', 'L', 'C'],
+            tableStyle: 'booktabs',
+            tableEnvironment: 'auto',
+            hasCaption: true,
+            hasSource: true,
+            hasDescription: true,
+            hasLabel: true
+          }
+        ]
+      },
+      {
+        id: 'sec_fmt6a_004_2',
+        isStructure: true,
+        level: 2,
+        title: 'Cierre y recomendacion',
+        expanded: true,
+        canvasExpanded: true,
+        children: [
+          {
+            id: 'var_fmt6a_riesgo',
+            isStructure: false,
+            type: 'variable',
+            label: 'Nivel de riesgo',
+            required: true,
+            inputType: 'select',
+            inputOptions: ['Bajo', 'Medio', 'Alto', 'Critico']
+          },
+          {
+            id: 'var_fmt6a_conclusion',
+            isStructure: false,
+            type: 'ai_text',
+            label: 'Conclusion tecnica',
+            required: true,
+            content: 'Completa una conclusion tecnica final basada en el analisis y el nivel de riesgo.',
+            promptTemplate:
+              'Redacta una conclusion tecnica a partir del analisis {{var_fmt6a_analisis}} y el nivel de riesgo {{var_fmt6a_riesgo}}.',
+            inputVariables: ['var_fmt6a_analisis', 'var_fmt6a_riesgo'],
+            generationMode: 'manual'
+          }
+        ]
+      }
+    ]
+  }
+];
+
+export const formato6ATemplates = [
+  {
+    id: 'tpl_formato_6a_completo',
+    slug: 'formato-6a-completo',
+    name: 'Formato 6A Completo',
+    description: 'Plantilla completa con todos los bloques soportados por TechDoc.',
+    isSystem: true,
+    data: formato6AFullStructure
+  }
+];
