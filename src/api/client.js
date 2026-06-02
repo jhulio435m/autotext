@@ -3,6 +3,8 @@ import { clearSessionToken, getSessionToken, notifyAuthExpired } from './session
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 const responseCache = new Map();
 const OFFLINE_QUEUE_KEY = 'techdoc_offline_queue';
+const MAX_RETRIES = 5;
+const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 function readOfflineQueue() {
   if (typeof window === 'undefined') return [];
@@ -11,13 +13,19 @@ function readOfflineQueue() {
 
 function writeOfflineQueue(queue) {
   if (typeof window === 'undefined') return;
-  window.localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue.slice(-25)));
+  const pruned = queue
+    .filter((item) => {
+      const age = Date.now() - new Date(item.createdAt).getTime();
+      return age < MAX_AGE_MS && (item.retryCount || 0) < MAX_RETRIES;
+    })
+    .slice(-25);
+  window.localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(pruned));
 }
 
 function enqueueOfflineRequest(path, options) {
   if (options.method !== 'PUT' && options.method !== 'POST') return;
   const queue = readOfflineQueue();
-  queue.push({ path, options: { method: options.method, body: options.body, auth: options.auth }, createdAt: new Date().toISOString() });
+  queue.push({ path, options: { method: options.method, body: options.body, auth: options.auth }, createdAt: new Date().toISOString(), retryCount: 0 });
   writeOfflineQueue(queue);
 }
 
@@ -28,7 +36,11 @@ export async function flushOfflineQueue() {
   writeOfflineQueue([]);
   let flushed = 0;
   for (const item of queue) {
-    try { await request(item.path, { ...item.options, skipOfflineQueue: true }); flushed += 1; } catch {
+    try {
+      await request(item.path, { ...item.options, skipOfflineQueue: true });
+      flushed += 1;
+    } catch {
+      item.retryCount = (item.retryCount || 0) + 1;
       writeOfflineQueue([item, ...queue.slice(flushed + 1)]);
       break;
     }
