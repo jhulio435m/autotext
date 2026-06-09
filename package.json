@@ -42,7 +42,7 @@
     "lucide-react": "^1.17.0",
     "nanoid": "^5.1.6",
     "nodemailer": "^8.0.10",
-    "pg": "^8.16.3",
+    "pg": "^8.21.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.13.1",
